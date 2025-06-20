@@ -274,11 +274,11 @@ async function handleAIQuery(api, event, body, threadID, messageID) {
 }
 
 function handleContact(api, threadID, messageID) {
-    const contactContent = `👨‍💻 Developers: Joshua Apostol, Cyril Encenso
-📧 Email: joshuaapostol909@gmail.com, Amigohaycyril10@gmail.com
-📱 Facebook: https://www.facebook.com/joshuaapostol2006, https://www.facebook.com/cyypookie
+    const contactContent = `👨‍💻 Developers: Joshua Apostol | Cyril Encenso
+📧 Email: joshuaapostol909@gmail.com | Amigohaycyril10@gmail.com
+📱 Facebook: https://www.facebook.com/joshuaapostol2006 | https://www.facebook.com/cyypookie
 🌐 Website: joshua-portfolio.com
-💻 GitHub: https://github.com/joshuaApos
+💻 GitHub: https://github.com/joshuaApos | https://github.com/atsushinakajima14
 
 💬 For support or inquiries, feel free to reach out!`;
     
@@ -586,7 +586,7 @@ async function handleSendNotification(api, event, args, threadID, messageID) {
 function handleHelp(api, threadID, messageID, prefix) {
     const helpMessage = `🤖 𝐍𝐀𝐒𝐇𝐁𝐎𝐓 - 𝐒𝐌𝐀𝐑𝐓 𝐕𝐄𝐑𝐒𝐈𝐎𝐍 🤖\n════════════════════\n\n✨ Just talk naturally! I understand:\n\n🤖 Questions & AI Chat\n📋 "What are the rules?"\n📹 "Send me a video" or "shoti"\n🆔 "Get ID/UID"\n⬬ "Download [Facebook URL]"\n🎵 "Find TikTok video about..."\n📊 "List groups"\n🔊 "Say something" (speech)\n📞 "Contact info"\n⏰ "Bot uptime"\n📢 "Send notification"\n\nNo commands needed - just chat! 💬`;
     
-    const imagePath = './josh.jpeg';
+    const imagePath = './nashbot.png';
     
     if (fs.existsSync(imagePath)) {
         const attachment = fs.createReadStream(imagePath);
@@ -625,7 +625,6 @@ function handleCommandList(api, threadID, messageID, prefix) {
     
     let message = `🤖 𝗡𝗔𝗦𝗛𝗕𝗢𝗧 - 𝗔𝗩𝗔𝗜𝗟𝗔𝗕𝗟𝗘 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 🤖\n════════════════════════════════\n\n`;
     
-    // Smart Commands Section
     message += `✨ 𝗦𝗠𝗔𝗥𝗧 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦 (𝗡𝗼 𝗣𝗿𝗲𝗳𝗶𝘅 𝗡𝗲𝗲𝗱𝗲𝗱!):\n`;
     message += `────────────────────────────────\n`;
     smartFeatures.forEach((feature, index) => {
@@ -634,7 +633,6 @@ function handleCommandList(api, threadID, messageID, prefix) {
     
     message += `\n`;
     
-    // Traditional Commands Section
     if (traditionalCommands.length > 0) {
         message += `⚙️ 𝗧𝗥𝗔𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 (${prefix}):\n`;
         message += `────────────────────────────────\n`;

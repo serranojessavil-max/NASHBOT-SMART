@@ -2,7 +2,7 @@
 # Authors
 
 <div align="center">
-  <img src="https://i.imgur.com/2Co5ddF.jpeg" alt="Profile Image" width="120" height="120" style="border-radius: 50%;">
+  <img src="https://i.imgur.com/TM6qhgB.jpeg" alt="Profile Image" width="120" height="120" style="border-radius: 50%;">
 </div>
 <div align="center">
   <p><strong>Joshua Apostol & Cyril Encenso</strong></p>
@@ -32,6 +32,7 @@ Just ask questions naturally:
 #### 🎥 Video Commands
 - **Request videos**: "send video", "show me a video", "shoti", "girl video"
 - **TikTok content**: "tiktok video", "random shoti"
+- **Facebook content**: "download this...", "download [Link]"
 
 #### 📞 Contact Information
 - **Get owner info**: "contact", "owner info", "developer", "creator info"
