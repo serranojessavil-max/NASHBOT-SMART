@@ -584,7 +584,36 @@ async function handleSendNotification(api, event, args, threadID, messageID) {
 }
 
 function handleHelp(api, threadID, messageID, prefix) {
-    const helpMessage = `🤖 𝐍𝐀𝐒𝐇𝐁𝐎𝐓 - 𝐒𝐌𝐀𝐑𝐓 𝐕𝐄𝐑𝐒𝐈𝐎𝐍 🤖\n════════════════════\n\n✨ Just talk naturally! I understand:\n\n🤖 Questions & AI Chat\n📋 "What are the rules?"\n📹 "Send me a video" or "shoti"\n🆔 "Get ID/UID"\n⬬ "Download [Facebook URL]"\n🎵 "Find TikTok video about..."\n📊 "List groups"\n🔊 "Say something" (speech)\n📞 "Contact info"\n⏰ "Bot uptime"\n📢 "Send notification"\n\nNo commands needed - just chat! 💬`;
+    const helpContent = `✨ Just talk naturally! I understand:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤖 𝗔𝗜 & 𝗤𝘂𝗲𝘀𝘁𝗶𝗼𝗻𝘀
+   • Ask anything naturally
+   • Get intelligent responses
+   • No special commands needed
+
+📋 𝗥𝘂𝗹𝗲𝘀 & 𝗜𝗻𝗳𝗼
+   • "What are the rules?"
+   • "Contact info"
+   • "Bot uptime"
+
+📹 𝗠𝗲𝗱𝗶𝗮 & 𝗘𝗻𝘁𝗲𝗿𝘁𝗮𝗶𝗻𝗺𝗲𝗻𝘁
+   • "Send me a video" or "shoti"
+   • "Find TikTok video about..."
+   • "Download [Facebook URL]"
+
+🔧 𝗨𝘁𝗶𝗹𝗶𝘁𝗶𝗲𝘀
+   • "Get ID/UID"
+   • "List groups"
+   • "Say something" (speech)
+   • "Send notification"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💬 𝗡𝗼 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀 𝗻𝗲𝗲𝗱𝗲𝗱 - 𝗷𝘂𝘀𝘁 𝗰𝗵𝗮𝘁!`;
+    
+    const helpMessage = design("🤖 NASHBOT - SMART VERSION", helpContent);
     
     const imagePath = './nashbot.png';
     
@@ -607,56 +636,65 @@ function handleCommandList(api, threadID, messageID, prefix) {
     const traditionalCommands = uniqueCommands.filter(cmd => 
         cmd.nashPrefix !== false && cmd.name !== 'smart'
     );
+    
     const smartFeatures = [
-        "🤖 AI Questions & Chat (just ask anything)",
-        "📋 Rules (ask 'what are the rules?')",
-        "📹 Videos (say 'send video' or 'shoti')",
-        "🆔 UID (ask 'get ID/UID')",
-        "⬬ Download (say 'download [Facebook URL]')",
-        "🎵 TikTok Search (say 'tiktok [search term]')",
-        "📊 Group List (say 'list groups')",
-        "👩 Women (say 'women' or 'babae')",
-        "🔊 Speech (say 'speak [text]')",
-        "📞 Contact (ask 'contact info')",
-        "⏰ Uptime (ask 'bot uptime')",
-        "📢 Notifications (say 'send notification [message]')",
-        "🚪 Leave Group (say 'leave' or 'out')"
+        "🤖 AI Questions & Chat",
+        "📋 Rules & Guidelines", 
+        "📹 Video Entertainment",
+        "🆔 User ID Information",
+        "⬬ Facebook Downloads",
+        "🎵 TikTok Search",
+        "📊 Group Management",
+        "👩 Special Content",
+        "🔊 Text-to-Speech",
+        "📞 Contact Information",
+        "⏰ System Uptime",
+        "📢 Notifications",
+        "🚪 Group Exit"
     ];
     
-    let message = `🤖 𝗡𝗔𝗦𝗛𝗕𝗢𝗧 - 𝗔𝗩𝗔𝗜𝗟𝗔𝗕𝗟𝗘 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 🤖\n════════════════════════════════\n\n`;
+    let smartContent = `✨ 𝗦𝗠𝗔𝗥𝗧 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦 (𝗡𝗼 𝗣𝗿𝗲𝗳𝗶𝘅 𝗡𝗲𝗲𝗱𝗲𝗱!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
     
-    message += `✨ 𝗦𝗠𝗔𝗥𝗧 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦 (𝗡𝗼 𝗣𝗿𝗲𝗳𝗶𝘅 𝗡𝗲𝗲𝗱𝗲𝗱!):\n`;
-    message += `────────────────────────────────\n`;
     smartFeatures.forEach((feature, index) => {
-        message += `${index + 1}. ${feature}\n`;
+        const number = (index + 1).toString().padStart(2, '0');
+        smartContent += `${number}. ${feature}\n`;
     });
     
-    message += `\n`;
+    smartContent += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     
     if (traditionalCommands.length > 0) {
-        message += `⚙️ 𝗧𝗥𝗔𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 (${prefix}):\n`;
-        message += `────────────────────────────────\n`;
+        smartContent += `⚙️ 𝗧𝗥𝗔𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 (${prefix})\n\n`;
         
         traditionalCommands.forEach((cmd, index) => {
-            message += `${index + 1}. ${prefix}${cmd.name}`;
+            const number = (index + 1).toString().padStart(2, '0');
+            smartContent += `${number}. ${prefix}${cmd.name}`;
             if (cmd.aliases && cmd.aliases.length > 0) {
-                message += ` (${cmd.aliases.map(alias => prefix + alias).join(', ')})`;
+                smartContent += ` [${cmd.aliases.map(alias => prefix + alias).join(', ')}]`;
             }
-            message += `\n   └ ${cmd.description || 'No description available'}\n\n`;
+            smartContent += `\n    ╰─ ${cmd.description || 'No description available'}\n\n`;
         });
+        
+        smartContent += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     }
     
-    message += `💡 𝗧𝗜𝗣: You can use smart features by just typing naturally!\n`;
-    message += `Example: "What's the weather?" or "Send me a video"\n\n`;
-    message += `🔧 For traditional commands, use ${prefix} prefix`;
+    smartContent += `💡 𝗧𝗜𝗣: Just type naturally!
+Example: "What's the weather?" or "Send me a video"
+
+🔧 For traditional commands, use ${prefix} prefix`;
+    
+    const commandListMessage = design("🤖 NASHBOT - AVAILABLE COMMANDS", smartContent);
     
     const imagePath = './josh.jpeg';
     
     if (fs.existsSync(imagePath)) {
         const attachment = fs.createReadStream(imagePath);
-        api.sendMessage({ body: message, attachment }, threadID, messageID);
+        api.sendMessage({ body: commandListMessage, attachment }, threadID, messageID);
     } else {
-        api.sendMessage(message, threadID, messageID);
+        api.sendMessage(commandListMessage, threadID, messageID);
     }
 }
 
