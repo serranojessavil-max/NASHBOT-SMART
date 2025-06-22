@@ -56,9 +56,9 @@ function getNextRestocks() {
     timers.gear = timers.seed = getCountdown(next5);
 
     const nextSummerEvent = new Date(now);
-    nextSummerEvent.setHours(1, 0, 0, 0); 
-    if (now.getHours() >= 1) {
-        nextSummerEvent.setDate(nextSummerEvent.getDate() + 1);
+    nextSummerEvent.setMinutes(0, 0, 0); 
+    if (now.getMinutes() > 0 || now.getSeconds() > 0 || now.getMilliseconds() > 0) {
+        nextSummerEvent.setHours(nextSummerEvent.getHours() + 1); 
     }
     timers.summerEvent = getCountdown(nextSummerEvent);
 
@@ -82,7 +82,7 @@ function addEmoji(name) {
         "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "Legendary Egg": "🪺", "Mythical Egg": "🔮",
         "Bug Egg": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "Paradise Egg": "🔮", "Cleaning Spray": "🧴", "Friendship Pot": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
         "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "Godly Sprinkler": "⛲",
-        "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Tanning Mirror": "🪞", "Favorite Tool": "❤️", "Harvest Tool": "🌾", "Carrot": "🥕",
+        "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾", "Carrot": "🥕",
         "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷", "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑",
         "Watermelon": "🍉", "Banana": "🍌", "Pineapple": "🍍", "Bell Pepper": "🌶️", "Prickly Pear": "🍐", "Loquat": "🍒",    
         "Kiwi": "🥝", "Feijoa": "🍈", "Sugar Apple": "🍏"
@@ -330,7 +330,7 @@ function translateAIKeywords() {
             questionPhrases: ['можешь ли ты', 'мог бы ты', 'хотел бы ты', 'делаешь ли ты', 'ты', 'это', 'будешь ли ты'],
             techKeywords: ['функция', 'переменная', 'массив', 'объект', 'строка', 'число', 'логический', 'цикл', 'условие']
         },
-    
+      // Chinese (Simplified)
         zh: {
             specificAi: [
                 '解释', '告诉我关于', '什么是', '如何做', '为什么做', '如何',
@@ -1386,7 +1386,7 @@ async function handleCurrentStatus(api, threadID, messageID) {
         content += `🌱 𝗦𝗘𝗘𝗗𝗦:\n${formatList(stockData.seed.items)}\n⏳ Restock In: ${restocks.seed}\n\n`;
         content += `🥚 𝗘𝗚𝗚𝗦:\n${formatList(stockData.egg.items)}\n⏳ Restock In: ${restocks.egg}\n\n`;
         content += `🎨 𝗖𝗢𝗦𝗠𝗘𝗧𝗜𝗖𝗦:\n${formatList(stockData.cosmetics.items)}\n⏳ Restock In: ${restocks.cosmetics}\n\n`;
-        content += `☀️ 𝗦𝗨𝗠𝗠𝗘𝗥 𝗘𝗩𝗘𝗡𝗧:\n🎯 Event: Summer Event 2024\n📊 Status: Active\n📝 Special summer activities and rewards\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
+        content += `☀️ 𝗦𝗨𝗠𝗠𝗘𝗥 𝗘𝗩𝗘𝗡𝗧:\n🎯 Event: Summer Event 2025\n📊 Status: Active\n📝 Special summer activities and rewards\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
 
         const updatedAtPH = getPHTime().toLocaleString("en-PH", {
             hour: "numeric", minute: "numeric", second: "numeric",
