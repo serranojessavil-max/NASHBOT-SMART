@@ -82,7 +82,7 @@ function addEmoji(name) {
         "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "Legendary Egg": "🪺", "Mythical Egg": "🔮",
         "Bug Egg": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "Paradise Egg": "🔮", "Cleaning Spray": "🧴", "Friendship Pot": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
         "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "Godly Sprinkler": "⛲",
-        "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾", "Carrot": "🥕",
+        "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Tanning Mirror": "🪞", "Favorite Tool": "❤️", "Harvest Tool": "🌾", "Carrot": "🥕",
         "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷", "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑",
         "Watermelon": "🍉", "Banana": "🍌", "Pineapple": "🍍", "Bell Pepper": "🌶️", "Prickly Pear": "🍐", "Loquat": "🍒",    
         "Kiwi": "🥝", "Feijoa": "🍈", "Sugar Apple": "🍏"
