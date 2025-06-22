@@ -55,11 +55,12 @@ function getNextRestocks() {
     if (nextM === 60) next5.setHours(now.getHours() + 1);
     timers.gear = timers.seed = getCountdown(next5);
 
-    const nextHoney = new Date(now);
-    nextHoney.setMinutes(now.getMinutes() < 30 ? 30 : 0);
-    if (now.getMinutes() >= 30) nextHoney.setHours(now.getHours() + 1);
-    nextHoney.setSeconds(0, 0);
-    timers.honey = getCountdown(nextHoney);
+    const nextSummerEvent = new Date(now);
+    nextSummerEvent.setHours(1, 0, 0, 0); 
+    if (now.getHours() >= 1) {
+        nextSummerEvent.setDate(nextSummerEvent.getDate() + 1);
+    }
+    timers.summerEvent = getCountdown(nextSummerEvent);
 
     const next7 = new Date(now);
     const totalHours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
@@ -79,13 +80,12 @@ function formatValue(val) {
 function addEmoji(name) {
     const emojis = {
         "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "Legendary Egg": "🪺", "Mythical Egg": "🔮",
-        "Bug Egg": "🪲", "Cleaning Spray": "🧴", "Friendship Pot": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
+        "Bug Egg": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "Paradise Egg": "🔮", "Cleaning Spray": "🧴", "Friendship Pot": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
         "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "Godly Sprinkler": "⛲",
         "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾", "Carrot": "🥕",
-        "Strawberry": "🍓", "Blueberry": "🫐", "Orange Tulip": "🌷", "Tomato": "🍅", "Corn": "🌽", "Daffodil": "🌼",
-        "Watermelon": "🍉", "Pumpkin": "🎃", "Apple": "🍎", "Bamboo": "🎍", "Coconut": "🥥", "Cactus": "🌵",
-        "Dragon Fruit": "🍈", "Mango": "🥭", "Grape": "🍇", "Mushroom": "🍄", "Pepper": "🌶️", "Cacao": "🍫",
-        "Beanstalk": "🌱", "Ember Lily": "🏵️", "Sugar Apple": "🍏"
+        "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷", "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑",
+        "Watermelon": "🍉", "Banana": "🍌", "Pineapple": "🍍", "Bell Pepper": "🌶️", "Prickly Pear": "🍐", "Loquat": "🍒",    
+        "Kiwi": "🥝", "Feijoa": "🍈", "Sugar Apple": "🍏"
     };
     return `${emojis[name] || ""} ${name}`;
 }
@@ -330,7 +330,7 @@ function translateAIKeywords() {
             questionPhrases: ['можешь ли ты', 'мог бы ты', 'хотел бы ты', 'делаешь ли ты', 'ты', 'это', 'будешь ли ты'],
             techKeywords: ['функция', 'переменная', 'массив', 'объект', 'строка', 'число', 'логический', 'цикл', 'условие']
         },
-      // Chinese (Simplified)
+    
         zh: {
             specificAi: [
                 '解释', '告诉我关于', '什么是', '如何做', '为什么做', '如何',
@@ -1287,7 +1287,11 @@ ${filters.length > 0 ? `🎯 Filtered items: ${filters.join(', ')}` : '🌍 Moni
                     seedsStock: backup.seed.items.map(i => ({ name: i.name, value: Number(i.quantity) })),
                     eggStock: backup.egg.items.map(i => ({ name: i.name, value: Number(i.quantity) })),
                     cosmeticsStock: backup.cosmetics.items.map(i => ({ name: i.name, value: Number(i.quantity) })),
-                    honeyStock: backup.honey.items.map(i => ({ name: i.name, value: Number(i.quantity) }))
+                    summerEventData: {
+                        name: "Summer Event 2024",
+                        status: "Active",
+                        description: "Special summer activities and rewards"
+                    }
                 };
 
                 const currentKey = JSON.stringify({
@@ -1321,7 +1325,9 @@ ${filters.length > 0 ? `🎯 Filtered items: ${filters.join(', ')}` : '🌍 Moni
                 addSection("🌱 𝐒𝐄𝐄𝐃𝐒", stockData.seedsStock, restocks.seed);
                 addSection("🥚 𝐄𝐆𝐆𝐒", stockData.eggStock, restocks.egg);
                 addSection("🎨 𝐂𝐎𝐒𝐌𝐄𝐓𝐈𝐂𝐒", stockData.cosmeticsStock, restocks.cosmetics);
-                addSection("🍯 𝐇𝐎𝐍𝐄𝐘", stockData.honeyStock, restocks.honey);
+                
+                // Summer Event section without items
+                filteredContent += `☀️ 𝐒𝐔𝐌𝐌𝐄𝐑 𝐄𝐕𝐄𝐍𝐓:\n🎯 Event: ${stockData.summerEventData.name}\n📊 Status: ${stockData.summerEventData.status}\n📝 ${stockData.summerEventData.description}\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
 
                 if (matched === 0 && filters.length > 0) return;
 
@@ -1380,7 +1386,7 @@ async function handleCurrentStatus(api, threadID, messageID) {
         content += `🌱 𝗦𝗘𝗘𝗗𝗦:\n${formatList(stockData.seed.items)}\n⏳ Restock In: ${restocks.seed}\n\n`;
         content += `🥚 𝗘𝗚𝗚𝗦:\n${formatList(stockData.egg.items)}\n⏳ Restock In: ${restocks.egg}\n\n`;
         content += `🎨 𝗖𝗢𝗦𝗠𝗘𝗧𝗜𝗖𝗦:\n${formatList(stockData.cosmetics.items)}\n⏳ Restock In: ${restocks.cosmetics}\n\n`;
-        content += `🍯 𝗛𝗢𝗡𝗘𝗬:\n${formatList(stockData.honey.items)}\n⏳ Restock In: ${restocks.honey}\n\n`;
+        content += `☀️ 𝗦𝗨𝗠𝗠𝗘𝗥 𝗘𝗩𝗘𝗡𝗧:\n🎯 Event: Summer Event 2024\n📊 Status: Active\n📝 Special summer activities and rewards\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
 
         const updatedAtPH = getPHTime().toLocaleString("en-PH", {
             hour: "numeric", minute: "numeric", second: "numeric",
@@ -1425,7 +1431,7 @@ function handleRestockTimers(api, threadID, messageID) {
 ⏰ 𝗥𝗘𝗦𝗧𝗢𝗖𝗞 𝗧𝗜𝗠𝗘𝗥𝗦
 
 🥚 Eggs: ${timers.egg}
-🍯 Honey: ${timers.honey}
+☀️ Summer Event: ${timers.summerEvent}
 ⚙️ Gear: ${timers.gear}
 🌱 Seeds: ${timers.seed}
 💄 Cosmetics: ${timers.cosmetics}
