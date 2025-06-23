@@ -77,7 +77,7 @@ function formatValue(val) {
     return `x${val}`;
 }
 
-function addEmojiWithHighlight(name) {
+function addEmoji(name) {
     const emojis = {
         "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "𝐋𝐞𝐠𝐞𝐧𝐝𝐚𝐫𝐲 𝐄𝐠𝐠": "🪺", "𝐌𝐲𝐭𝐡𝐢𝐜𝐚𝐥 𝐄𝐠𝐠": "🔮",
         "𝐁𝐮𝐠 𝐄𝐠𝐠": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "𝐏𝐚𝐫𝐚𝐝𝐢𝐬𝐞 𝐄𝐠𝐠": "🪩",
