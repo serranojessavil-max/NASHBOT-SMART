@@ -77,17 +77,30 @@ function formatValue(val) {
     return `x${val}`;
 }
 
-function addEmoji(name) {
+function addEmojiWithHighlight(name) {
     const emojis = {
         "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "𝐋𝐞𝐠𝐞𝐧𝐝𝐚𝐫𝐲 𝐄𝐠𝐠": "🪺", "𝐌𝐲𝐭𝐡𝐢𝐜𝐚𝐥 𝐄𝐠𝐠": "🔮",
-        "𝐁𝐮𝐠 𝐄𝐠𝐠": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "𝐏𝐚𝐫𝐚𝐝𝐢𝐬𝐞 𝐄𝐠𝐠": "🪩", "Cleaning Spray": "🧴", "𝐅𝐫𝐢𝐞𝐧𝐝𝐬𝐡𝐢𝐩 𝐏𝐨𝐭": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
+        "𝐁𝐮𝐠 𝐄𝐠𝐠": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "𝐏𝐚𝐫𝐚𝐝𝐢𝐬𝐞 𝐄𝐠𝐠": "🪩",
+        "Cleaning Spray": "🧴", "𝐅𝐫𝐢𝐞𝐧𝐝𝐬𝐡𝐢𝐩 𝐏𝐨𝐭": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
         "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "𝐆𝐨𝐝𝐥𝐲 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫": "⛲",
-        "𝐋𝐢𝐠𝐡𝐭𝐧𝐢𝐧𝐠 𝐑𝐨𝐝": "⚡", "𝐌𝐚𝐬𝐭𝐞𝐫 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾", "𝐓𝐚𝐧𝐧𝐢𝐧𝐠 𝐌𝐢𝐫𝐫𝐨𝐫": "🪞", "Carrot": "🥕",
-        "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷", "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑",
-        "Watermelon": "🍉", "Banana": "🍌", "Pineapple": "🍍", "𝐁𝐞𝐥𝐥 𝐏𝐞𝐩𝐩𝐞𝐫": "🌶️", "𝐏𝐫𝐢𝐜𝐤𝐥𝐲 𝐏𝐞𝐚𝐫": "🍐", "𝐋𝐨𝐪𝐮𝐚𝐭": "🍒",    
+        "𝐋𝐢𝐠𝐡𝐭𝐧𝐢𝐧𝐠 𝐑𝐨𝐝": "⚡", "𝐌𝐚𝐬𝐭𝐞𝐫 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾",
+        "𝐓𝐚𝐧𝐧𝐢𝐧𝐠 𝐌𝐢𝐫𝐫𝐨𝐫": "🪞", "Carrot": "🥕", "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷",
+        "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑", "Watermelon": "🍉", "Banana": "🍌",
+        "Pineapple": "🍍", "𝐁𝐞𝐥𝐥 𝐏𝐞𝐩𝐩𝐞𝐫": "🌶️", "𝐏𝐫𝐢𝐜𝐤𝐥𝐲 𝐏𝐞𝐚𝐫": "🍐", "𝐋𝐨𝐪𝐮𝐚𝐭": "🍒",
         "𝐊𝐢𝐰𝐢": "🥝", "𝐅𝐞𝐢𝐣𝐨𝐚": "🍈", "𝐒𝐮𝐠𝐚𝐫 𝐀𝐩𝐩𝐥𝐞": "🍏"
     };
-    return `${emojis[name] || ""} ${name}`;
+
+    const isBold = /[\u{1D400}-\u{1D7FF}]/u.test(name);
+
+    const emoji = emojis[name] || "❓";
+
+    if (isBold) {
+        
+        return `⭐ **${emoji} ${name}**`;
+    } else {
+       
+        return `${emoji} ${name}`;
+    }
 }
 
 module.exports = {
