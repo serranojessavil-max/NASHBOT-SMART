@@ -19,7 +19,7 @@ module.exports = {
 
           const welcomeMessage = `
 ┌────────────────────────┐
-│     🤖 NASHBOT ONLINE     │
+│  🤖 NASHBOT ONLINE     │
 └────────────────────────┘
 
 ✨ Successfully Connected!
@@ -49,7 +49,7 @@ module.exports = {
           
           const welcomeMessage = `
 ┌────────────────────────┐
-│     🎉 WELCOME ABOARD!     │
+│ 🎉 WELCOME ABOARD!     │
 └────────────────────────┘
 
 👋 Hello ${participantsList}!
