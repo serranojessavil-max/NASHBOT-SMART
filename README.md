@@ -21,7 +21,6 @@ NASH BOT features a groundbreaking intelligent command system that understands n
 
 ### 🤖 Advanced AI Assistant
 Interact naturally with sophisticated AI capabilities:
-- **Context-Aware Responses**: Reply to bot messages for intelligent context understanding
 - **Educational Support**: Get detailed explanations on any topic
 - **Programming Assistant**: Code help, debugging, and technical guidance
 - **Mathematical Calculations**: Solve complex equations instantly
