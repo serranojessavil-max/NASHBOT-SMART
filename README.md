@@ -1,4 +1,3 @@
-
 # Authors
 
 <div align="center">
