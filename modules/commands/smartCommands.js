@@ -80,23 +80,50 @@ function formatValue(val) {
 
 function addEmoji(name) {
     const emojis = {
-        "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "𝐋𝐞𝐠𝐞𝐧𝐝𝐚𝐫𝐲 𝐄𝐠𝐠": "🪺", "𝐌𝐲𝐭𝐡𝐢𝐜𝐚𝐥 𝐄𝐠𝐠": "🔮",
-        "𝐁𝐮𝐠 𝐄𝐠𝐠": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "𝐏𝐚𝐫𝐚𝐝𝐢𝐬𝐞 𝐄𝐠𝐠": "🪩",
-        "Cleaning Spray": "🧴", "𝐅𝐫𝐢𝐞𝐧𝐝𝐬𝐡𝐢𝐩 𝐏𝐨𝐭": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
-        "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "𝐆𝐨𝐝𝐥𝐲 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫": "⛲",
-        "𝐋𝐢𝐠𝐡𝐭𝐧𝐢𝐧𝐠 𝐑𝐨𝐝": "⚡", "𝐌𝐚𝐬𝐭𝐞𝐫 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾",
-        "𝐓𝐚𝐧𝐧𝐢𝐧𝐠 𝐌𝐢𝐫𝐫𝐨𝐫": "🪞", "Carrot": "🥕", "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷",
+      
+        "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "Legendary Egg": "🪺", "Mythical Egg": "🔮",
+        "Bug Egg": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "Paradise Egg": "🪩",
+        
+        "Cleaning Spray": "🧴", "Friendship Pot": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
+        "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "Godly Sprinkler": "⛲",
+        "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾",
+        "Tanning Mirror": "🪞", "Magnifying Glass": "🪞",
+        
+        "Carrot": "🥕", "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷",
         "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑", "Watermelon": "🍉", "Banana": "🍌",
-        "Pineapple": "🍍", "𝐁𝐞𝐥𝐥 𝐏𝐞𝐩𝐩𝐞𝐫": "🌶️", "𝐏𝐫𝐢𝐜𝐤𝐥𝐲 𝐏𝐞𝐚𝐫": "🍐", "𝐋𝐨𝐪𝐮𝐚𝐭": "🍒",
-        "𝐊𝐢𝐰𝐢": "🥝", "𝐅𝐞𝐢𝐣𝐨𝐚": "🍈", "𝐒𝐮𝐠𝐚𝐫 𝐀𝐩𝐩𝐥𝐞": "🍏"
+        "Pineapple": "🍍", "Bell Pepper": "🌶️", "Prickly Pear": "🍐", "Loquat": "🍒",
+        "Kiwi": "🥝", "Feijoa": "🍈", "Sugar Apple": "🍏",
+        
+        "Sunglasses": "🕶️", "Hat": "🎩", "Crown": "👑", "Bow": "🎀", "Glasses": "👓",
+        "Mask": "🎭", "Earrings": "💍", "Necklace": "📿", "Bracelet": "⌚", "Ring": "💎",
+        "Scarf": "🧣", "Headband": "🎪", "Tiara": "💄", "Lipstick": "💋", "Nail Polish": "💅"
     };
 
-    const isBold = /[\u{1D400}-\u{1D7FF}]/u.test(name);
+    const highlightedItems = [
+     
+        "𝐋𝐞𝐠𝐞𝐧𝐝𝐚𝐫𝐲 𝐄𝐠𝐠", "𝐌𝐲𝐭𝐡𝐢𝐜𝐚𝐥 𝐄𝐠𝐠", "𝐁𝐮𝐠 𝐄𝐠𝐠", "𝐏𝐚𝐫𝐚𝐝𝐢𝐬𝐞 𝐄𝐠𝐠",
+        
+        "𝐅𝐫𝐢𝐞𝐧𝐝𝐬𝐡𝐢𝐩 𝐏𝐨𝐭", "𝐆𝐨𝐝𝐥𝐲 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫", "𝐋𝐢𝐠𝐡𝐭𝐧𝐢𝐧𝐠 𝐑𝐨𝐝", 
+        "𝐌𝐚𝐬𝐭𝐞𝐫 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫", "𝐓𝐚𝐧𝐧𝐢𝐧𝐠 𝐌𝐢𝐫𝐫𝐨𝐫",
+        
+        "𝐁𝐞𝐥𝐥 𝐏𝐞𝐩𝐩𝐞𝐫", "𝐏𝐫𝐢𝐜𝐤𝐥𝐲 𝐏𝐞𝐚𝐫", "𝐋𝐨𝐪𝐮𝐚𝐭", "𝐊𝐢𝐰𝐢", "𝐅𝐞𝐢𝐣𝐨𝐚", "𝐒𝐮𝐠𝐚𝐫 𝐀𝐩𝐩𝐥𝐞",
+        
+        "Crown", "Tiara", "Diamond Ring", "Golden Necklace", "Rare Hat", "Special Glasses",
+        "Legendary Sunglasses", "Mythical Crown", "Rainbow Bow", "Crystal Earrings"
+    ];
+
+    const rarityKeywords = ['legendary', 'mythical',  'divine', 'rainbow', 'prismatic'];
+    const hasRarityKeyword = rarityKeywords.some(keyword => name.toLowerCase().includes(keyword));
 
     const emoji = emojis[name] || "❓";
+    
+    const isHighlighted = highlightedItems.includes(name) || 
+                         /[\u{1D400}-\u{1D7FF}]/u.test(name) || 
+                         hasRarityKeyword;
 
-    if (isBold) {
-        return `⭐ **${emoji} ${name}**`;
+    if (isHighlighted) {
+      
+        return `🌟 ${emoji} 【${name}】`;
     } else {
         return `${emoji} ${name}`;
     }
@@ -1177,7 +1204,11 @@ ${filters.length > 0 ? `🎯 Filtered items: ${filters.join(', ')}` : '🌍 Moni
                 lastSentCache.set(threadID, currentKey);
 
                 const restocks = getNextRestocks();
-                const formatList = (arr) => arr.map(i => `- ${addEmoji(i.name)}: ${formatValue(i.value)}`).join("\n");
+                const formatList = (arr) => arr.map(i => {
+                    const formattedItem = addEmoji(i.name);
+                    const value = formatValue(i.value);
+                    return `- ${formattedItem}: ${value}`;
+                }).join("\n");
 
                 let filteredContent = "";
                 let matched = 0;
@@ -1251,7 +1282,11 @@ async function handleCurrentStatus(api, threadID, messageID) {
         const stockData = response.data;
 
         const restocks = getNextRestocks();
-        const formatList = (arr) => arr.map(i => `- ${addEmoji(i.name)}: ${formatValue(i.quantity)}`).join("\n");
+        const formatList = (arr) => arr.map(i => {
+            const formattedItem = addEmoji(i.name);
+            const value = formatValue(i.quantity);
+            return `- ${formattedItem}: ${value}`;
+        }).join("\n");
 
         let content = "";
         content += `🛠️ 𝗚𝗘𝗔𝗥𝗦:\n${formatList(stockData.gear.items)}\n⏳ Restock In: ${restocks.gear}\n\n`;
