@@ -493,8 +493,10 @@ The smart command system in NASHBOT uses an intelligent priority-based detection
 ```javascript
 // High Priority: Specific utility commands
 - Facebook video downloads (URL detection)
+- Instagram video download (URL detection)
 - GAG stock tracking (WebSocket management)
 - TikTok searches (API integration)
+- Spotify search & download
 - Contact and information requests
 
 // Medium Priority: General functionality
