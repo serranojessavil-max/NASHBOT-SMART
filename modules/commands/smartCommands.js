@@ -16,6 +16,7 @@ function design(title, content) {
 }
 
 const smartCooldowns = new Map();
+const aiToggleStates = new Map(); 
 
 const activeSessions = new Map();
 const lastSentCache = new Map();
@@ -95,11 +96,39 @@ function addEmoji(name) {
     const emoji = emojis[name] || "❓";
 
     if (isBold) {
-        
         return `⭐ **${emoji} ${name}**`;
     } else {
-       
         return `${emoji} ${name}`;
+    }
+}
+
+async function isNaturalConversation(message) {
+    try {
+
+        const prompt = `Analyze this message and determine if it's a natural conversation or question that would benefit from an AI response. 
+
+Message: "${message}"
+
+Rules:
+- Return "true" if it's a question, request for explanation, general conversation, or needs AI assistance
+- Return "false" if it's a specific command like downloading, getting stock info, or administrative tasks
+- Consider context: mathematical expressions, educational queries, casual chat all count as "true"
+- Commands like "download", "stock", "prefix", "rules", "video" should be "false"
+
+Respond with only "true" or "false":`;
+
+        const response = await axios.get(`${global.NashBot.JOSHUA}api/gpt4o-latest?ask=${encodeURIComponent(prompt)}&uid=999&imageUrl=&apikey=609efa09-3ed5-4132-8d03-d6f8ca11b527`);
+        const result = response.data.response.toLowerCase().trim();
+        return result === "true";
+    } catch (error) {
+       
+        const simpleConversationIndicators = [
+            message.endsWith('?'),
+            message.length > 10 && /\b(how|what|when|where|why|who|which|can you|could you|would you|tell me|explain|help)\b/i.test(message),
+            /\d+\s*[\+\-\*\/\=]\s*\d+/.test(message), 
+            message.split(' ').length > 3 && !/(download|stock|prefix|rules|video|command|cmd)/i.test(message)
+        ];
+        return simpleConversationIndicators.some(indicator => indicator);
     }
 }
 
@@ -148,7 +177,9 @@ module.exports = {
             return handleContact(api, threadID, messageID);
         }
 
-
+        if (isAIToggleRequest(message)) {
+            return handleAIToggle(api, event, body, threadID, messageID);
+        }
 
         if (isAriaRequest(message)) {
             return handleAria(api, event, body, threadID, messageID);
@@ -174,12 +205,8 @@ module.exports = {
             return handleSendNotification(api, event, args, threadID, messageID);
         }
 
-        if (isHelpRequest(message)) {
-            return handleHelp(api, threadID, messageID, prefix);
-        }
-
-        if (isCommandListRequest(message)) {
-            return handleCommandList(api, threadID, messageID, prefix);
+        if (isHelpRequest(message) || isCommandListRequest(message)) {
+            return handleComprehensiveHelp(api, threadID, messageID, prefix);
         }
 
         if (isPrefixRequest(message)) {
@@ -216,205 +243,18 @@ module.exports = {
             return handleWomen(api, threadID, messageID);
         }
 
-        if (isAIQuery(message)) {
+        const aiEnabled = aiToggleStates.get(threadID) || false;
+
+        if (event.messageReply && event.messageReply.senderID === api.getCurrentUserID()) {
             return handleAIQuery(api, event, body, threadID, messageID);
         }
+
+        if (aiEnabled) {
+            return handleAIQuery(api, event, body, threadID, messageID);
+        }
+
     }
 };
-
-function translateAIKeywords() {
-    const englishKeywords = {
-        specificAi: [
-            'explain', 'tell me about', 'what is', 'how does', 'why does', 'how to',
-            'define', 'meaning of', 'calculate', 'solve', 'create', 'write', 'make',
-            'generate', 'gpt', 'ai', 'chatgpt', 'openai', 'assistant', 'think',
-            'analyze', 'compare', 'describe', 'summarize', 'translate', 'convert',
-            'recommend', 'suggest', 'help me', 'can you', 'could you', 'would you',
-            'please', 'teach me', 'show me', 'find', 'search', 'look up',
-            'algorithm', 'code', 'programming', 'debug', 'error', 'fix',
-            'review', 'optimize', 'improve', 'best practice', 'tutorial',
-            'example', 'sample', 'demo', 'illustration', 'guide'
-        ],
-        questionWords: ['what', 'how', 'why', 'when', 'where', 'who', 'which', 'whose'],
-        questionPhrases: ['can you', 'could you', 'would you', 'do you', 'are you', 'is it', 'will you'],
-        techKeywords: ['function', 'variable', 'array', 'object', 'string', 'number', 'boolean', 'loop', 'condition']
-    };
-
-    const translations = {
-
-        tl: {
-            specificAi: [
-                'ipaliwanag', 'sabihin mo sa akin tungkol sa', 'ano ang', 'paano ginagawa', 'bakit ginagawa', 'paano',
-                'tukuyin', 'kahulugan ng', 'kalkulahin', 'lutasin', 'lumikha', 'sumulat', 'gumawa',
-                'lumikha', 'gpt', 'ai', 'chatgpt', 'openai', 'katulong', 'mag-isip',
-                'suriin', 'ihambing', 'ilarawan', 'buuin', 'isalin', 'baguhin',
-                'irekomenda', 'imungkahi', 'tulungan mo ako', 'maaari ka ba', 'pwede ka ba', 'gusto mo ba',
-                'pakisuyo', 'turuan mo ako', 'ipakita mo sa akin', 'hanapin', 'maghanap', 'tingnan',
-                'algorithm', 'code', 'programming', 'debug', 'error', 'ayusin',
-                'suriin', 'i-optimize', 'pahusayin', 'best practice', 'tutorial',
-                'halimbawa', 'sample', 'demo', 'ilustrasyon', 'gabay'
-            ],
-            questionWords: ['ano', 'paano', 'bakit', 'kailan', 'saan', 'sino', 'alin', 'kanino'],
-            questionPhrases: ['maaari ka ba', 'pwede ka ba', 'gusto mo ba', 'ginagawa mo ba', 'ikaw ba ay', 'ito ba ay', 'gagawin mo ba'],
-            techKeywords: ['function', 'variable', 'array', 'object', 'string', 'numero', 'boolean', 'loop', 'kondisyon']
-        },
-
-        ceb: {
-            specificAi: [
-                'ipasabot', 'sultihi ko mahitungod sa', 'unsa ang', 'giunsa pagbuhat', 'ngano gibuhat', 'giunsa',
-                'ilhan', 'kahulugan sa', 'kuwentaha', 'sulbara', 'himoa', 'isulat', 'buhata',
-                'himoa', 'gpt', 'ai', 'chatgpt', 'openai', 'katabang', 'maghunahuna',
-                'susiha', 'itandi', 'ihulagway', 'ihiusa', 'hubara', 'usba',
-                'irekomenda', 'isugyot', 'tabanga ko', 'mahimo ka ba', 'pwede ka ba', 'gusto ka ba',
-                'palihog', 'tudloi ko', 'ipakita nako', 'pangita', 'mangita', 'tan-awa',
-                'algorithm', 'code', 'programming', 'debug', 'error', 'ayoha',
-                'susiha', 'i-optimize', 'pauswaga', 'maayong pamaagi', 'tutorial',
-                'pananglitan', 'sample', 'demo', 'ilustrasyon', 'giya'
-            ],
-            questionWords: ['unsa', 'giunsa', 'ngano', 'kanus-a', 'asa', 'kinsa', 'hain', 'kang kinsa'],
-            questionPhrases: ['mahimo ka ba', 'pwede ka ba', 'gusto ka ba', 'gibuhat nimo ba', 'ikaw ba', 'kini ba', 'buhaton nimo ba'],
-            techKeywords: ['function', 'variable', 'array', 'object', 'string', 'numero', 'boolean', 'loop', 'kondisyon']
-        },
-
-        bn: {
-            specificAi: [
-                'ব্যাখ্যা করুন', 'আমাকে বলুন সম্পর্কে', 'কি', 'কিভাবে করে', 'কেন করে', 'কিভাবে',
-                'সংজ্ঞায়িত করুন', 'অর্থ', 'গণনা করুন', 'সমাধান করুন', 'তৈরি করুন', 'লিখুন', 'করুন',
-                'তৈরি করুন', 'gpt', 'ai', 'chatgpt', 'openai', 'সহায়ক', 'চিন্তা করুন',
-                'বিশ্লেষণ করুন', 'তুলনা করুন', 'বর্ণনা করুন', 'সংক্ষেপ করুন', 'অনুবাদ করুন', 'রূপান্তর করুন',
-                'সুপারিশ করুন', 'পরামর্শ দিন', 'আমাকে সাহায্য করুন', 'আপনি কি পারবেন', 'আপনি কি পারেন', 'আপনি কি চান',
-                'দয়া করে', 'আমাকে শেখান', 'আমাকে দেখান', 'খুঁজুন', 'অনুসন্ধান করুন', 'দেখুন',
-                'অ্যালগরিদম', 'কোড', 'প্রোগ্রামিং', 'ডিবাগ', 'ত্রুটি', 'ঠিক করুন',
-                'পর্যালোচনা করুন', 'অপ্টিমাইজ করুন', 'উন্নত করুন', 'ভাল অনুশীলন', 'টিউটোরিয়াল',
-                'উদাহরণ', 'নমুনা', 'ডেমো', 'চিত্র', 'গাইড'
-            ],
-            questionWords: ['কি', 'কিভাবে', 'কেন', 'কখন', 'কোথায়', 'কে', 'কোনটি', 'কার'],
-            questionPhrases: ['আপনি কি পারবেন', 'আপনি কি পারেন', 'আপনি কি চান', 'আপনি কি করেন', 'আপনি কি', 'এটি কি', 'আপনি কি করবেন'],
-            techKeywords: ['ফাংশন', 'ভেরিয়েবল', 'অ্যারে', 'অবজেক্ট', 'স্ট্রিং', 'সংখ্যা', 'বুলিয়ান', 'লুপ', 'শর্ত']
-        },
-
-        id: {
-            specificAi: [
-                'jelaskan', 'ceritakan tentang', 'apa itu', 'bagaimana cara', 'mengapa', 'cara',
-                'definisikan', 'arti dari', 'hitung', 'selesaikan', 'buat', 'tulis', 'buat',
-                'hasilkan', 'gpt', 'ai', 'chatgpt', 'openai', 'asisten', 'pikir',
-                'analisis', 'bandingkan', 'deskripsikan', 'ringkas', 'terjemahkan', 'konversi',
-                'rekomendasikan', 'sarankan', 'bantu saya', 'bisakah kamu', 'dapatkah kamu', 'maukah kamu',
-                'tolong', 'ajari saya', 'tunjukkan', 'cari', 'telusuri', 'lihat',
-                'algoritma', 'kode', 'pemrograman', 'debug', 'error', 'perbaiki',
-                'tinjau', 'optimalisasi', 'tingkatkan', 'praktik terbaik', 'tutorial',
-                'contoh', 'sampel', 'demo', 'ilustrasi', 'panduan'
-            ],
-            questionWords: ['apa', 'bagaimana', 'mengapa', 'kapan', 'dimana', 'siapa', 'yang mana', 'milik siapa'],
-            questionPhrases: ['bisakah kamu', 'dapatkah kamu', 'maukah kamu', 'apakah kamu', 'apakah kamu', 'apakah ini', 'akankah kamu'],
-            techKeywords: ['fungsi', 'variabel', 'array', 'objek', 'string', 'angka', 'boolean', 'loop', 'kondisi']
-        },
-
-        fr: {
-            specificAi: [
-                'expliquer', 'parlez-moi de', 'qu\'est-ce que', 'comment fait', 'pourquoi fait', 'comment',
-                'définir', 'signification de', 'calculer', 'résoudre', 'créer', 'écrire', 'faire',
-                'générer', 'gpt', 'ai', 'chatgpt', 'openai', 'assistant', 'penser',
-                'analyser', 'comparer', 'décrire', 'résumer', 'traduire', 'convertir',
-                'recommander', 'suggérer', 'aidez-moi', 'pouvez-vous', 'pourriez-vous', 'voudriez-vous',
-                's\'il vous plaît', 'enseignez-moi', 'montrez-moi', 'trouver', 'chercher', 'regarder',
-                'algorithme', 'code', 'programmation', 'déboguer', 'erreur', 'corriger',
-                'examiner', 'optimiser', 'améliorer', 'bonne pratique', 'tutoriel',
-                'exemple', 'échantillon', 'démo', 'illustration', 'guide'
-            ],
-            questionWords: ['quoi', 'comment', 'pourquoi', 'quand', 'où', 'qui', 'lequel', 'à qui'],
-            questionPhrases: ['pouvez-vous', 'pourriez-vous', 'voudriez-vous', 'faites-vous', 'êtes-vous', 'est-ce', 'allez-vous'],
-            techKeywords: ['fonction', 'variable', 'tableau', 'objet', 'chaîne', 'nombre', 'booléen', 'boucle', 'condition']
-        },
-
-        ru: {
-            specificAi: [
-                'объяснить', 'расскажи мне о', 'что такое', 'как делает', 'почему делает', 'как',
-                'определить', 'значение', 'вычислить', 'решить', 'создать', 'написать', 'сделать',
-                'генерировать', 'gpt', 'ai', 'chatgpt', 'openai', 'помощник', 'думать',
-                'анализировать', 'сравнить', 'описать', 'резюмировать', 'перевести', 'конвертировать',
-                'рекомендовать', 'предложить', 'помоги мне', 'можешь ли ты', 'мог бы ты', 'хотел бы ты',
-                'пожалуйста', 'научи меня', 'покажи мне', 'найти', 'искать', 'посмотреть',
-                'алгоритм', 'код', 'программирование', 'отладка', 'ошибка', 'исправить',
-                'обзор', 'оптимизировать', 'улучшить', 'лучшая практика', 'учебник',
-                'пример', 'образец', 'демо', 'иллюстрация', 'руководство'
-            ],
-            questionWords: ['что', 'как', 'почему', 'когда', 'где', 'кто', 'который', 'чей'],
-            questionPhrases: ['можешь ли ты', 'мог бы ты', 'хотел бы ты', 'делаешь ли ты', 'ты', 'это', 'будешь ли ты'],
-            techKeywords: ['функция', 'переменная', 'массив', 'объект', 'строка', 'число', 'логический', 'цикл', 'условие']
-        },
-     
-        zh: {
-            specificAi: [
-                '解释', '告诉我关于', '什么是', '如何做', '为什么做', '如何',
-                '定义', '意思', '计算', '解决', '创建', '写', '做',
-                '生成', 'gpt', 'ai', 'chatgpt', 'openai', '助手', '思考',
-                '分析', '比较', '描述', '总结', '翻译', '转换',
-                '推荐', '建议', '帮助我', '你能', '你可以', '你愿意',
-                '请', '教我', '给我看', '找到', '搜索', '查看',
-                '算法', '代码', '编程', '调试', '错误', '修复',
-                '审查', '优化', '改进', '最佳实践', '教程',
-                '例子', '样本', '演示', '插图', '指南'
-            ],
-            questionWords: ['什么', '如何', '为什么', '何时', '哪里', '谁', '哪个', '谁的'],
-            questionPhrases: ['你能', '你可以', '你愿意', '你做', '你是', '这是', '你会'],
-            techKeywords: ['函数', '变量', '数组', '对象', '字符串', '数字', '布尔', '循环', '条件']
-        }
-    };
-
-    const allKeywords = {
-        specificAi: [...englishKeywords.specificAi],
-        questionWords: [...englishKeywords.questionWords],
-        questionPhrases: [...englishKeywords.questionPhrases],
-        techKeywords: [...englishKeywords.techKeywords]
-    };
-
-    Object.values(translations).forEach(lang => {
-        allKeywords.specificAi.push(...lang.specificAi);
-        allKeywords.questionWords.push(...lang.questionWords);
-        allKeywords.questionPhrases.push(...lang.questionPhrases);
-        allKeywords.techKeywords.push(...lang.techKeywords);
-    });
-
-    return allKeywords;
-}
-
-function isAIQuery(message) {
-    const keywords = translateAIKeywords();
-
-    if (keywords.specificAi.some(keyword => message.includes(keyword))) {
-        return true;
-    }
-
-    if (message.endsWith('?') || keywords.questionWords.some(word => message.startsWith(word + ' '))) {
-        const excludePatterns = [
-            'what commands', 'what cmd', 'what are the rules', 'what is your prefix',
-            'what\'s my uid', 'what\'s my id', 'how long', 'when did', 'what commands',
-            'what video', 'what movie', 'what song', 'when restock', 'what time',
-            'how to download', 'gag stock', 'stock', 'restock', 'ano ang commands',
-            'unsa ang commands', 'কি কমান্ড', 'apa perintah', 'quelles commandes',
-            'какие команды', '什么命令'
-        ];
-
-        if (!excludePatterns.some(pattern => message.includes(pattern))) {
-            return true;
-        }
-    }
-
-    if (keywords.questionPhrases.some(phrase => message.includes(phrase))) {
-        return true;
-    }
-
-    if (/[\d\+\-\*\/\(\)\=\^\%]/.test(message) && message.length > 3) {
-        return true;
-    }
-
-    if (keywords.techKeywords.some(keyword => message.includes(keyword))) {
-        return true;
-    }
-
-    return false;
-}
 
 function isGagStockRequest(message) {
     const gagKeywords = [
@@ -431,7 +271,14 @@ function isContactRequest(message) {
            message.includes('developer') || message.includes('creator info');
 }
 
-
+function isAIToggleRequest(message) {
+    return (message.includes('on ai') || message.includes('ai on') || 
+            message.includes('enable ai') || message.includes('turn on ai') ||
+            (message === 'on' || message === 'ai')) ||
+           (message.includes('off ai') || message.includes('ai off') || 
+            message.includes('disable ai') || message.includes('turn off ai') ||
+            message === 'off');
+}
 
 function isAriaRequest(message) {
     return message.includes('aria') || message.includes('alternative ai');
@@ -476,14 +323,16 @@ function isNotificationRequest(message) {
 
 function isHelpRequest(message) {
     return message.includes('help') || message.includes('what can you do') ||
-           message.includes('what are your features') || message.includes('smart');
-}
-
-function isCommandListRequest(message) {
-    return message.includes('command') || message.includes('cmd') || 
+           message.includes('what are your features') || message.includes('smart') ||
+           message.includes('command') || message.includes('cmd') || 
            message.includes('list command') || message.includes('show command') ||
            message.includes('list cmd') || message.includes('show cmd') ||
            message.includes('available command') || message.includes('what commands');
+}
+
+function isCommandListRequest(message) {
+ 
+    return false;
 }
 
 function isPrefixRequest(message) {
@@ -516,6 +365,63 @@ function isListBoxRequest(message) {
     return message.includes('list') && (message.includes('group') || message.includes('box'));
 }
 
+async function handleAIToggle(api, event, body, threadID, messageID) {
+    const message = body.toLowerCase().trim();
+
+    if (message.includes('on') || message === 'ai' || message.includes('enable')) {
+        aiToggleStates.set(threadID, true);
+
+        const onContent = `----------------------------------
+
+🤖 𝗔𝗜 𝗠𝗢𝗗𝗘 𝗔𝗖𝗧𝗜𝗩𝗔𝗧𝗘𝗗
+
+✅ AI responses are now ENABLED
+🧠 I will respond to ANY message naturally
+💬 No need for specific keywords anymore
+🎯 Just talk to me like a normal conversation
+
+----------------------------------
+
+💡 Examples of what I can do:
+   • Answer any questions
+   • Help with coding problems
+   • Solve math equations
+   • Provide explanations
+   • Have casual conversations
+
+🔧 To disable: Type "off ai" or "ai off"`;
+
+        const aiOnMessage = design("🤖 SMART AI ASSISTANT", onContent);
+        return api.sendMessage(aiOnMessage, threadID, messageID);
+
+    } else if (message.includes('off') || message.includes('disable')) {
+        aiToggleStates.set(threadID, false);
+
+        const offContent = `----------------------------------
+
+🔇 𝗔𝗜 𝗠𝗢𝗗𝗘 𝗗𝗜𝗦𝗔𝗕𝗟𝗘𝗗
+
+❌ AI responses are now COMPLETELY DISABLED
+🚫 No automatic conversational detection
+🎯 Only specific utility commands will work
+⚡ Smart commands still active
+
+----------------------------------
+
+💡 I will ONLY respond to:
+   • Specific smart commands (download, stock, etc.)
+   • TikTok searches
+   • Help commands
+   • Other utility features
+   • NOT general questions or conversations
+
+🔧 To enable AI: Type "on ai" or "ai on"`;
+
+        const aiOffMessage = design("🤖 SMART AI ASSISTANT", offContent);
+        return api.sendMessage(aiOffMessage, threadID, messageID);
+    }
+}
+
 async function handleAIQuery(api, event, body, threadID, messageID) {
     const prompt = body.trim();
 
@@ -534,19 +440,26 @@ async function handleAIQuery(api, event, body, threadID, messageID) {
 }
 
 function handleContact(api, threadID, messageID) {
-    const contactContent = `👨‍💻 Developers: Joshua Apostol | Cyril Encenso
-📧 Email: joshuaapostol909@gmail.com || Amigohaycyril10@gmail.com
-📱 Facebook: https://www.facebook.com/joshuaapostol2006 || https://www.facebook.com/cyypookie
-🌐 Website: joshua-portfolio.com
-💻 GitHub: https://github.com/joshuaApos || https://github.com/atsushinakajima14
+    const contactContent = `🧑‍💻 LEAD DEVELOPER
+   Joshua Apostol
+   📧 joshuaapostol909@gmail.com
+   📱 fb.com/joshuaapostol2006
+   💻 github.com/joshuaApos
 
-💬 For support or inquiries, feel free to reach out!`;
+👨‍💻 CO-LEAD DEVELOPER  
+   Cyril Encenso
+   📧 Amigohaycyril10@gmail.com
+   📱 fb.com/cyypookie
+   💻 github.com/atsushinakajima14
 
-    const contactInfo = design("📞 Contact Information", contactContent);
+🌐 PORTFOLIO
+   joshua-portfolio.com
+
+💬 Support & Inquiries Welcome!`;
+
+    const contactInfo = design("📞 DEVELOPER CONTACTS", contactContent);
     api.sendMessage(contactInfo, threadID, messageID);
 }
-
-
 
 async function handleAria(api, event, body, threadID, messageID) {
     const prompt = body.replace(/aria/gi, '').trim();
@@ -590,7 +503,12 @@ async function handleShoti(api, threadID, messageID) {
             const username = data.username;
             const nickname = data.nickname;
 
-            const videoPath = path.resolve(__dirname, 'temp', 'shoti.mp4');
+            const tempDir = path.resolve(__dirname, 'temp');
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+            }
+
+            const videoPath = path.resolve(tempDir, 'shoti.mp4');
             const writer = fs.createWriteStream(videoPath);
 
             const responseStream = await axios({
@@ -814,79 +732,7 @@ async function handleSendNotification(api, event, args, threadID, messageID) {
     }
 }
 
-function handleHelp(api, threadID, messageID, prefix) {
-    const helpContent = `----------------------------------
-
-🤖 AI & Intelligence
-   • Ask any question naturally
-   • Get detailed explanations
-   • Programming help & debugging
-   • Math calculations
-   • Educational content
-   • General conversation
-
-🎮 Grow A Garden Tracker
-   • "gag stock" - Live stock tracking
-   • "gag stock start" - Begin monitoring
-   • "gag stock stop" - Stop tracking
-   • "restock timer" - View timers
-   • Real-time WebSocket updates
-
-📹 Media & Entertainment
-   • "Send me a video" or "shoti"
-   • "TikTok video about [topic]"
-   • "Download [Facebook URL]"
-   • "women/babae" - Special content
-
-🔧 Utilities & Tools
-   • "Get my UID" - User identification
-   • "List groups" - Group management
-   • "Send notification [message]"
-   • "Bot uptime" - System status
-
-📋 Information
-   • "What are the rules?"
-   • "Contact info" - Developer details
-   • "What's your prefix?"
-   • "Commands" - Full command list
-
-🎭 AI Alternatives
-   • "aria [question]" - Alternative AI
-
-🚪 Admin Features
-   • "leave/out" - Bot exit group
-   • "add user [UID]" - Add members
-   • "change admin [UID]" - Transfer admin
-   • "shell [command]" - Execute commands
-   • "eval [code]" - Run JavaScript
-
-----------------------------------
-
-💡 Tips:
-   • No prefixes needed for most features
-   • Smart detection understands context
-   • Questions ending with "?" auto-detected
-   • Use natural language for best results
-
-💬 Examples:
-   • "What's the weather like?"
-   • "How do I code in Python?"
-   • "Show me a funny video"
-   • "Download this Facebook video [URL]"`;
-
-    const helpMessage = design("🤖 NASHBOT - COMPREHENSIVE GUIDE", helpContent);
-
-    const imagePath = './nashbot.png';
-
-    if (fs.existsSync(imagePath)) {
-        const attachment = fs.createReadStream(imagePath);
-        api.sendMessage({ body: helpMessage, attachment }, threadID);
-    } else {
-        api.sendMessage(helpMessage, threadID);
-    }
-}
-
-function handleCommandList(api, threadID, messageID, prefix) {
+function handleComprehensiveHelp(api, threadID, messageID, prefix) {
     const { commands } = global.NashBoT;
     const commandArray = Array.from(commands.values());
 
@@ -898,103 +744,117 @@ function handleCommandList(api, threadID, messageID, prefix) {
         cmd.nashPrefix !== false && cmd.name !== 'smart'
     );
 
-    let smartContent = `✨ 𝗦𝗠𝗔𝗥𝗧 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦 (𝗡𝗼 𝗣𝗿𝗲𝗳𝗶𝘅 𝗡𝗲𝗲𝗱𝗲𝗱!)
+    let helpContent = `----------------------------------
 
-----------------------------------
+🤖 𝗔𝗜 & 𝗜𝗻𝘁𝗲𝗹𝗹𝗶𝗴𝗲𝗻𝗰𝗲
+   • "on ai" / "ai on" - Enable AI mode
+   • "off ai" / "ai off" - Disable AI mode
+   • When AI ON: Responds to ANY message
+   • When AI OFF: Smart NLP detection only
+   • Ask questions naturally & get instant answers
+   • Programming help, debugging & code review
+   • Math calculations & complex problem solving
+   • Educational explanations & tutorials
+   • Text analysis, translation & generation
+   • General conversation & casual chat
+   • Reply to bot messages for context-aware responses
 
-🤖 AI & Intelligence
-   • Ask any question naturally
-   • Programming help & code review
-   • Math calculations & solving
-   • Educational explanations
-   • Text analysis & generation
-   • Conversation & chat
+🎮 𝗚𝗿𝗼𝘄 𝗔 𝗚𝗮𝗿𝗱𝗲𝗻 𝗟𝗶𝘃𝗲 𝗧𝗿𝗮𝗰𝗸𝗲𝗿
+   • "gag stock" - Current stock status with timers
+   • "gag stock start" - Live WebSocket monitoring
+   • "gag stock stop" - Stop real-time tracking
+   • "restock timer" - View all countdown timers
+   • Real-time updates every 10 seconds
+   • Filter specific items: "gag stock start Sunflower | Watering Can"
+   • Weather bonuses & event tracking included
+   • Philippines timezone synchronized
 
-🎮 Grow A Garden Tracker
-   • "gag stock" - Current stock status
-   • "gag stock start" - Live tracking
-   • "gag stock stop" - Stop monitoring
-   • "restock timer" - View all timers
-   • Real-time WebSocket updates
-   • Filter specific items
+📹 𝗠𝗲𝗱𝗶𝗮 & 𝗘𝗻𝘁𝗲𝗿𝘁𝗮𝗶𝗻𝗺𝗲𝗻𝘁
+   • "video" / "shoti" / "girl" - Random TikTok videos
+   • "TikTok [search term]" - Search specific content
+   • "Download [Facebook URL]" - High-quality video downloads
+   • "women" / "babae" - Special meme content
+   • Auto-cleanup of temporary files
 
-📹 Media & Entertainment
-   • "video", "shoti" - Random videos
-   • "TikTok [search]" - TikTok search
-   • "Download [Facebook URL]" - FB videos
-   • "women", "babae" - Special content
+🔧 𝗨𝘁𝗶𝗹𝗶𝘁𝗶𝗲𝘀 & 𝗧𝗼𝗼𝗹𝘀
+   • "uid" / "my id" - Get user identification
+   • "list groups" - View all connected groups
+   • "notification [message]" - Broadcast to all groups
+   • "uptime" - Bot runtime & performance stats
+   • Auto-unsend reactions on message deletions
 
-🔧 Utilities & Tools
-   • "uid", "my id" - Get user ID
-   • "list groups" - Group management
-   • "notification [msg]" - Broadcast
-   • "uptime" - Bot runtime status
+📋 𝗜𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻 & 𝗦𝘂𝗽𝗽𝗼𝗿𝘁
+   • "rules" - Server guidelines & regulations
+   • "contact" / "developer" - Creator information
+   • "prefix" - View current command prefix
+   • "help" / "commands" - This comprehensive guide
 
-📋 Information & Help
-   • "rules" - Server guidelines
-   • "contact" - Developer info
-   • "prefix" - Current prefix
-   • "help" - Feature guide
-   • "commands" - This list
+🎭 𝗔𝗜 𝗔𝗹𝘁𝗲𝗿𝗻𝗮𝘁𝗶𝘃𝗲𝘀
+   • "aria [question]" - Alternative AI assistant
 
-🎭 AI Alternatives
-   • "aria [question]" - Alternative AI
-
-🚪 Admin Features (Admin Only)
-   • "leave", "out" - Exit group
-   • "add user [UID]" - Add members
-   • "change admin [UID]" - Transfer admin
+🚪 𝗔𝗱𝗺𝗶𝗻 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀 (𝗔𝗱𝗺𝗶𝗻 𝗢𝗻𝗹𝘆)
+   • "leave" / "out" - Remove bot from group
+   • "add user [UID]" - Add members to group
+   • "change admin [UID]" - Transfer admin privileges
    • "shell [command]" - Execute system commands
-   • "eval [code]" - Run JavaScript code
+   • "eval [code]" - Run JavaScript code directly
 
-----------------------------------
-
-`;
+----------------------------------`;
 
     if (traditionalCommands.length > 0) {
-        smartContent += `⚙️ 𝗧𝗥𝗔𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 (${prefix})\n\n`;
+        helpContent += `\n\n⚙️ 𝗧𝗥𝗔𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 (${prefix})\n\n`;
 
         traditionalCommands.forEach((cmd, index) => {
             const number = (index + 1).toString().padStart(2, '0');
-            smartContent += `${number}. ${prefix}${cmd.name}`;
+            helpContent += `${number}. ${prefix}${cmd.name}`;
             if (cmd.aliases && cmd.aliases.length > 0) {
-                smartContent += ` [${cmd.aliases.map(alias => prefix + alias).join(', ')}]`;
+                helpContent += ` [${cmd.aliases.map(alias => prefix + alias).join(', ')}]`;
             }
-            smartContent += `\n    ╰─ ${cmd.description || 'No description available'}\n`;
+            helpContent += `\n    ╰─ ${cmd.description || 'No description available'}\n`;
             if (cmd.cooldowns && cmd.cooldowns > 0) {
-                smartContent += `    ╰─ ⏱️ Cooldown: ${cmd.cooldowns}s\n`;
+                helpContent += `    ╰─ ⏱️ Cooldown: ${cmd.cooldowns}s\n`;
             }
-            smartContent += `\n`;
+            helpContent += `\n`;
         });
 
-        smartContent += `----------------------------------\n\n`;
+        helpContent += `----------------------------------`;
     }
 
-    smartContent += `💡 𝗨𝘀𝗮𝗴𝗲 𝗧𝗶𝗽𝘀:
-   • Most features work without prefixes
+    helpContent += `\n\n💡 𝗨𝘀𝗮𝗴𝗲 𝗧𝗶𝗽𝘀 & 𝗧𝗿𝗶𝗰𝗸𝘀:
+   • Most features work WITHOUT prefixes
    • Use natural language for best results
+   • Smart NLP detection understands context
+   • Math expressions calculated automatically
+   • URLs recognized and processed instantly
    • Questions ending with "?" auto-detected
-   • Math expressions automatically calculated
-   • URLs automatically recognized
+   • AI mode remembers conversation context
 
-🔧 𝗘𝘅𝗮𝗺𝗽𝗹𝗲𝘀:
-   • "What's 15 + 25?"
+🔧 𝗘𝘅𝗮𝗺𝗽𝗹𝗲 𝗜𝗻𝘁𝗲𝗿𝗮𝗰𝘁𝗶𝗼𝗻𝘀:
+   • "What's 15 × 25 + 100?"
    • "How do I center a div in CSS?"
-   • "Send me a random video"
-   • "Download this: [Facebook URL]"
-   • "${prefix}help" (traditional command)
+   • "Show me a funny TikTok video"
+   • "Download this: [Facebook Video URL]"
+   • "What are the rules of this group?"
+   • "${prefix}help" (traditional command example)
+
+🚀 𝗡𝗲𝘄 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀:
+   • Reply context-awareness for AI responses
+   • Enhanced mobile-friendly notifications
+   • Improved error handling for "shoti" command
+   • Real-time GAG stock WebSocket monitoring
+   • Advanced natural language processing
 
 📊 𝗧𝗼𝘁𝗮𝗹: ${uniqueCommands.length} available features`;
 
-    const commandListMessage = design("🤖 NASHBOT - COMPLETE COMMAND LIST", smartContent);
+    const comprehensiveMessage = design("🤖 NASHBOT - COMPLETE FEATURE GUIDE", helpContent);
 
-    const imagePath = './josh.jpeg';
+    const imagePath = './nashbot.png';
 
     if (fs.existsSync(imagePath)) {
         const attachment = fs.createReadStream(imagePath);
-        api.sendMessage({ body: commandListMessage, attachment }, threadID, messageID);
+        api.sendMessage({ body: comprehensiveMessage, attachment }, threadID, messageID);
     } else {
-        api.sendMessage(commandListMessage, threadID, messageID);
+        api.sendMessage(comprehensiveMessage, threadID, messageID);
     }
 }
 
@@ -1338,7 +1198,7 @@ ${filters.length > 0 ? `🎯 Filtered items: ${filters.join(', ')}` : '🌍 Moni
                 addSection("🌱 𝐒𝐄𝐄𝐃𝐒", stockData.seedsStock, restocks.seed);
                 addSection("🥚 𝐄𝐆𝐆𝐒", stockData.eggStock, restocks.egg);
                 addSection("🎨 𝐂𝐎𝐒𝐌𝐄𝐓𝐈𝐂𝐒", stockData.cosmeticsStock, restocks.cosmetics);
-                
+
                 filteredContent += `☀️ 𝐒𝐔𝐌𝐌𝐄𝐑 𝐄𝐕𝐄𝐍𝐓:\n🎯 Event: ${stockData.summerEventData.name}\n📊 Status: ${stockData.summerEventData.status}\n📝 ${stockData.summerEventData.description}\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
 
                 if (matched === 0 && filters.length > 0) return;
