@@ -12,51 +12,101 @@
 </div>
 
 <div align="center">
-  <p>Welcome to NASHBOT - your ultimate companion for managing Facebook group chats with ease!</p>
+  <p>Welcome to NASHBOT - your ultimate AI-powered companion for managing Facebook group chats with advanced intelligence and real-time features!</p>
 </div>
 
-## ✨ Smart Commands System
+## ✨ Revolutionary Smart Commands System
 
-NASH BOT features an intelligent command system that understands natural language! You can interact with the bot without needing to remember specific command prefixes.
+NASH BOT features a groundbreaking intelligent command system that understands natural language and provides context-aware responses without requiring command prefixes.
 
-### 🤖 AI Assistant
-Just ask questions naturally:
-- "What is the weather today?"
-- "Tell me about artificial intelligence"
-- "How do I cook pasta?"
-- "Explain quantum physics"
+### 🤖 Advanced AI Assistant
+Interact naturally with sophisticated AI capabilities:
+- **Context-Aware Responses**: Reply to bot messages for intelligent context understanding
+- **Educational Support**: Get detailed explanations on any topic
+- **Programming Assistant**: Code help, debugging, and technical guidance
+- **Mathematical Calculations**: Solve complex equations instantly
+- **Natural Conversations**: Casual chat with intelligent responses
+- **Multi-Language Support**: Communicate in various languages
+- **Real-Time Processing**: Instant responses with advanced NLP
 
-### 📋 Available Commands
+### 🎮 Grow A Garden Live Tracker (NEW!)
+Real-time stock monitoring with WebSocket technology:
+- **Live Monitoring**: "gag stock start" - Real-time WebSocket updates
+- **Smart Filtering**: "gag stock start Sunflower | Watering Can" - Track specific items
+- **Countdown Timers**: "restock timer" - Philippines timezone synchronized
+- **Weather Integration**: Live weather bonuses and event tracking
+- **Auto-Updates**: Refreshes every 10 seconds with live data
+- **Session Management**: Start/stop tracking with persistent connections
 
-#### 🎥 Video Commands
-- **Request videos**: "send video", "show me a video", "shoti", "girl video"
-- **TikTok content**: "tiktok video", "random shoti"
-- **Facebook content**: "download this...", "download [Link]"
+### 📹 Enhanced Media & Entertainment
+Advanced video and content management:
+- **Smart Video Requests**: "video", "shoti", "girl video" - AI-curated content
+- **TikTok Search**: "TikTok [topic]" - Search and download specific content
+- **Facebook Downloads**: "Download [URL]" - High-quality video extraction
+- **Auto-Cleanup**: Temporary file management with error handling
+- **Format Optimization**: Mobile-friendly video processing
 
-#### 📞 Contact Information
-- **Get owner info**: "contact", "owner info", "developer", "creator info"
+### 🔧 Professional Utilities & Tools
+Comprehensive group management features:
+- **User Identification**: "uid", "my id" - Advanced user tracking
+- **Group Analytics**: "list groups" - Complete group statistics
+- **Broadcast System**: "notification [message]" - Multi-group messaging
+- **Performance Monitoring**: "uptime" - Real-time bot statistics
+- **Auto-Reactions**: Smart reaction management with cleanup
 
-#### 📖 Rules & Guidelines
-- **View server rules**: "rules", "what are the rules", "guidelines", "regulations"
+### 📱 Mobile-Optimized Notifications
+Professional notification system designed for mobile:
+- **Aesthetic Join/Leave Messages**: Clean, mobile-friendly design
+- **Compact Line Formatting**: Optimized for mobile Messenger
+- **Professional Layout**: Business-grade appearance
+- **Error Handling**: Robust notification delivery system
 
-#### 🔊 Text-to-Speech
-- **Voice synthesis**: "speech", "speak this", "say", "voice", "pronounce"
+### 📋 Available Commands & Features
 
-#### 🤖 Alternative AI
-- **Aria AI**: "aria", "alternative ai"
+#### 🎯 Smart Detection (No Prefix Required)
+- **AI Conversations**: Ask any question naturally
+- **Mathematical Expressions**: "What's 15 × 25 + 100?"
+- **Educational Queries**: "Explain quantum physics"
+- **Programming Help**: "How do I center a div in CSS?"
+- **Real-Time Stock**: "gag stock start" / "gag stock stop"
+- **Media Requests**: "Show me a funny video"
+- **Information**: "What are the rules?" / "Contact info"
 
-#### 📊 Utility Commands
-- **View all commands**: "help", "commands", "cmd list"
+#### 🤖 AI Mode Control
+- **Enable AI**: "on ai" / "ai on" - Full conversational mode
+- **Disable AI**: "off ai" / "ai off" - Smart detection only
+- **Alternative AI**: "aria [question]" - Secondary AI assistant
 
-### 🌟 Natural Language Processing
-The bot automatically detects what you want based on keywords in your message. No need to remember exact command syntax!
+#### 📊 Advanced Features
+- **Reply Context**: AI remembers conversation when you reply to bot messages
+- **URL Recognition**: Automatic Facebook video download detection
+- **Spam Protection**: Individual user cooldown system (5 seconds)
+- **Error Recovery**: Graceful fallback mechanisms
+- **WebSocket Monitoring**: Real-time data streaming for GAG tracker
+
+### 🚀 Latest Updates & New Features
+
+#### 🆕 Version 2.0 Enhancements
+- **Context-Aware AI Responses**: Bot remembers conversation context when replying
+- **Mobile-Optimized Notifications**: Professional join/leave messages for mobile
+- **Enhanced Error Handling**: Improved "shoti" command with robust error management
+- **Unified Help System**: Single comprehensive help command (removed duplicates)
+- **Real-Time GAG Tracking**: Live WebSocket monitoring with filtering capabilities
+- **Advanced NLP**: Improved natural language processing with conflict resolution
+
+#### 🔧 Technical Improvements
+- **Priority-Based Detection**: Specific commands processed before general AI queries
+- **Memory Management**: Automatic cleanup and cooldown management
+- **Session Persistence**: Reliable WebSocket connections with auto-reconnect
+- **Performance Optimization**: Efficient processing with early returns
+- **Mobile Compatibility**: Responsive design for mobile Messenger interface
 
 ## HOW TO CREATE COMMANDS?
 
 ### 📁 File Structure
 Commands should be placed in the `modules/commands/` directory as `.js` files.
 
-### 🔧 Command Template
+### 🔧 Advanced Command Template
 ```javascript
 module.exports = {
   name: "commandname",           // Command name (required)
@@ -65,198 +115,171 @@ module.exports = {
   role: "user",                  // "admin" or "user" - restricts command access
   aliases: ["alias1", "alias2"], // Alternative names for the command
   cooldowns: 5,                  // Cooldown in seconds (0 = no cooldown)
-  version: "1.0.0",             // Command version (optional)
+  version: "2.0.0",             // Command version (recommended)
+  author: "Your Name",          // Command author
   execute: async (api, event, args, prefix) => {
-    // Your command logic here
+    // Your advanced command logic here
     const { threadID, messageID, senderID, body } = event;
     
-    // Send a message
-    api.sendMessage("Hello from my command!", threadID, messageID);
+    // Enhanced message with design function
+    const { format } = require("cassidy-styler");
+    function design(title, content) {
+        return format({
+            title,
+            titleFont: "bold",
+            contentFont: "none",
+            titlePattern: "【 NASH 】{word} {emojis}",
+            content,
+        });
+    }
+    
+    const response = design("Command Response", "Your message content here");
+    api.sendMessage(response, threadID, messageID);
   }
 };
 ```
 
-### 📝 Command Examples
+### 📝 Advanced Command Examples
 
-#### 1. Basic Command with Prefix
-```javascript
-module.exports = {
-  name: "hello",
-  description: "Greets the user",
-  nashPrefix: true,
-  role: "user",
-  aliases: ["hi", "greet"],
-  cooldowns: 3,
-  execute: (api, event, args, prefix) => {
-    api.sendMessage(`Hello! Thanks for using NashBot`, event.threadID);
-  }
-};
-```
-
-#### 2. Smart Command (No Prefix Required)
+#### 1. Smart Command with AI Integration
 ```javascript
 module.exports = {
   name: "weather",
-  description: "Gets weather information",
-  nashPrefix: false, // Works without prefix
+  description: "AI-powered weather information",
+  nashPrefix: false, // No prefix required
   role: "user",
   cooldowns: 10,
+  version: "2.0.0",
   execute: async (api, event, args, prefix) => {
     const { threadID, messageID, body } = event;
     
-    // Extract location from message
-    const location = body.replace(/weather|in|for/gi, '').trim();
+    // Smart location extraction
+    const location = body.replace(/weather|in|for|what's|how's/gi, '').trim();
     
     if (!location) {
-      return api.sendMessage("Please specify a location!", threadID, messageID);
+      return api.sendMessage("Please specify a location for weather info!", threadID, messageID);
     }
     
-    // Your weather API logic here
-    api.sendMessage(`Weather for ${location}: Sunny, 25°C`, threadID, messageID);
-  }
-};
-```
-
-#### 3. Admin-Only Command
-```javascript
-module.exports = {
-  name: "restart",
-  description: "Restarts the bot (admin only)",
-  nashPrefix: true,
-  role: "admin", // Only admins can use this
-  cooldowns: 30,
-  execute: (api, event, args, prefix) => {
-    api.sendMessage("Restarting bot...", event.threadID, () => {
-      process.exit(1);
+    // Processing message with design
+    api.sendMessage("🌤️ Getting weather data...", threadID, async (err, info) => {
+      try {
+        // Your weather API integration here
+        const weatherData = await getWeatherData(location);
+        const response = design("Weather Information", 
+          `📍 Location: ${location}\n🌡️ Temperature: ${weatherData.temp}°C\n☁️ Condition: ${weatherData.condition}`
+        );
+        api.editMessage(response, info.messageID);
+      } catch (error) {
+        api.editMessage("❌ Failed to get weather data", info.messageID);
+      }
     });
   }
 };
 ```
 
-#### 4. Command with File Attachments
+#### 2. WebSocket Real-Time Command
 ```javascript
-const fs = require("fs");
-const path = require("path");
+const WebSocket = require('ws');
 
 module.exports = {
-  name: "image",
-  description: "Sends an image",
-  nashPrefix: true,
+  name: "livestock",
+  description: "Real-time stock monitoring with WebSocket",
+  nashPrefix: false,
   role: "user",
-  cooldowns: 5,
-  execute: (api, event, args, prefix) => {
-    const imagePath = path.join(__dirname, "assets", "sample.jpg");
+  cooldowns: 0,
+  version: "2.0.0",
+  execute: async (api, event, args, prefix) => {
+    const { threadID, messageID } = event;
     
-    if (fs.existsSync(imagePath)) {
-      api.sendMessage({
-        body: "Here's your image!",
-        attachment: fs.createReadStream(imagePath)
-      }, event.threadID);
-    } else {
-      api.sendMessage("Image not found!", event.threadID);
-    }
+    // WebSocket connection for real-time data
+    const ws = new WebSocket('wss://api.example.com/stock');
+    
+    ws.on('message', (data) => {
+      const stockData = JSON.parse(data);
+      const response = design("Live Stock Update", 
+        `📊 ${stockData.symbol}: $${stockData.price}\n📈 Change: ${stockData.change}%`
+      );
+      api.sendMessage(response, threadID);
+    });
+    
+    // Auto-cleanup after 5 minutes
+    setTimeout(() => ws.close(), 300000);
   }
 };
 ```
 
-### 🎯 Smart Command Integration
+### 🌟 Smart Command Integration
 
-To add functionality to the smart command system (like in `smartCommands.js`), you can:
+To add functionality to the smart command system:
 
 1. **Add Detection Function:**
 ```javascript
 function isYourCommandRequest(message) {
-  return message.includes('your keyword') || message.includes('trigger phrase');
+  return message.includes('your keyword') || 
+         message.includes('trigger phrase') ||
+         /your-regex-pattern/i.test(message);
 }
 ```
 
 2. **Add Handler Function:**
 ```javascript
 async function handleYourCommand(api, event, body, threadID, messageID) {
-  // Your command logic here
-  api.sendMessage("Smart command response!", threadID, messageID);
+  const response = design("Your Feature", "Feature response content");
+  api.sendMessage(response, threadID, messageID);
 }
 ```
 
-3. **Add to Execute Function:**
+3. **Add to Priority System:**
 ```javascript
-// Add this in the smartCommands.js execute function
+// Add in smartCommands.js execute function (maintain priority order)
 if (isYourCommandRequest(message)) {
   return handleYourCommand(api, event, body, threadID, messageID);
 }
 ```
 
-### 📋 Command Properties Explained
-
-- **name**: Unique identifier for the command
-- **description**: Brief explanation of what the command does
-- **nashPrefix**: 
-  - `true` = Command requires the bot prefix (e.g., `/hello`)
-  - `false` = Command works without prefix (smart detection)
-- **role**: 
-  - `"user"` = Anyone can use the command
-  - `"admin"` = Only users in `config.json` adminUID can use
-- **aliases**: Array of alternative names for the command
-- **cooldowns**: Time in seconds before user can use command again
-- **version**: Optional version number for your command
-
-### 🔄 Event Object Properties
-
-The `event` object contains:
-- `threadID`: Group/chat ID where message was sent
-- `messageID`: ID of the message that triggered the command
-- `senderID`: Facebook user ID of the sender
-- `body`: Full text content of the message
-- `args`: Array of arguments (words after command name)
-- `mentions`: Object containing mentioned users
-- `attachments`: Array of attached files/media
-
-### 💡 Best Practices
-
-1. **Always handle errors** with try-catch blocks
-2. **Use async/await** for API calls
-3. **Validate user input** before processing
-4. **Clean up temporary files** after use
-5. **Use meaningful command names** and descriptions
-6. **Test commands thoroughly** before deployment
-7. **Follow the existing code style** in the project
-
 ## Features
 
-- **Smart Command System**: 
-  - Natural language processing for intuitive interactions
-  - No prefix required for most commands
-  - Intelligent keyword detection
-  - Fallback to traditional prefix-based commands
+- **Revolutionary Smart Commands**: 
+  - Advanced natural language processing with context awareness
+  - No prefix required for intelligent interactions
+  - Priority-based command detection with conflict resolution
+  - Individual user cooldown system with spam protection
+  - Reply-context awareness for AI conversations
 
-- **Command Handling**: 
-  - Supports dynamic command registration
-  - Allows commands to be prefixed for easier access
-  - Role-based command execution to restrict access to admin users
-  - Cooldown system to prevent spam
-  - Command aliases for flexibility
+- **Real-Time WebSocket Integration**: 
+  - Live Grow A Garden stock monitoring
+  - Real-time updates every 10 seconds
+  - Session management with auto-reconnect
+  - Filter-specific item tracking
+  - Philippines timezone synchronization
 
-- **Automatic Login**: 
-  - Automatically logs in using saved app state credentials
-  - Maintains user sessions and handles reconnections gracefully
-  - Retry mechanism with configurable attempts
-  - Connection timeout handling
+- **Enhanced Command System**: 
+  - Dynamic command registration with hot-reload capability
+  - Role-based access control for admin features
+  - Advanced cooldown management per user
+  - Command aliases with flexible naming
+  - Mobile-optimized response formatting
 
-- **Event Handling**: 
-  - Listens for events and executes corresponding handlers
-  - Join/leave notifications with custom messages
-  - Auto-reactions and unsend reactions
-  - Keep-alive mechanism for stable connections
+- **Professional Auto-Features**: 
+  - Aesthetic join/leave notifications optimized for mobile
+  - Auto-reactions with intelligent cleanup
+  - Error handling with graceful fallbacks
+  - Temporary file management with auto-cleanup
+  - Connection stability with retry mechanisms
 
-- **Custom Configuration**: 
-  - Configurable through a `config.json` file
-  - Allows setting command prefixes and admin user IDs
-  - Customizable bot behavior and responses
+- **AI-Powered Intelligence**: 
+  - Context-aware conversations with memory
+  - Advanced mathematical calculation processing
+  - Programming assistance with code analysis
+  - Educational content generation
+  - Multi-language conversation support
 
-- **Web Interface**:
-  - Express server for monitoring and control
-  - Status dashboard accessible via web browser
-  - Real-time bot status information
+- **Enterprise-Grade Monitoring**:
+  - Express server with real-time dashboard
+  - Performance metrics and uptime tracking
+  - WebSocket connection monitoring
+  - Error logging with detailed diagnostics
+  - Resource usage optimization
 
 ## 🚀 Getting Started
 
@@ -278,6 +301,11 @@ The `event` object contains:
    node index.js
    ```
 
+5. **Verify Installation**:
+   - Check console for successful login message
+   - Test with "help" command in any group chat
+   - Verify WebSocket connections for GAG tracker
+
 ## Configuration
 
 ### config.json Example:
@@ -288,19 +316,39 @@ The `event` object contains:
 }
 ```
 
+### Advanced Configuration Options:
+```json
+{
+  "prefix": "!",
+  "adminUID": ["61577257754062"],
+  "autoReact": true,
+  "smartCommands": true,
+  "gagTracking": true,
+  "aiMode": "smart",
+  "cooldownTime": 5000,
+  "maxRetries": 3
+}
+```
+
 ## Troubleshooting
 
-- **Issue:** Bot fails to log in.
-  - **Solution:** Check your credentials in `config.json` and ensure your app state is valid. Try generating a new appstate using the C3C method below.
+- **Issue:** Bot fails to log in or shows "ENOENT" error.
+  - **Solution:** Check your `appstate.json` validity. Generate a new appstate using C3C method. Ensure all required files exist in the project directory.
   
-- **Issue:** Commands not responding.
-  - **Solution:** Ensure the command prefix is set correctly in `config.json`. Remember that smart commands work without prefixes!
+- **Issue:** Smart commands not responding.
+  - **Solution:** Verify that `nashPrefix: false` is set in command files. Check for typos in keyword detection functions. Test with simple phrases first.
 
-- **Issue:** "Error retrieving userID" message.
-  - **Solution:** Your appstate may be expired. Generate a new one using the C3C extension tutorial below.
+- **Issue:** WebSocket connections failing for GAG tracker.
+  - **Solution:** Check internet connectivity. Verify that the GAG stock API is accessible. Restart the bot to refresh connections.
 
-- **Issue:** Bot keeps retrying login.
-  - **Solution:** Check if your Facebook account needs verification. Log into Facebook normally in a browser first.
+- **Issue:** "shoti" command showing unhandled errors.
+  - **Solution:** This has been fixed in the latest update with enhanced error handling. Update to the latest version and restart the bot.
+
+- **Issue:** Join/Leave notifications not displaying properly on mobile.
+  - **Solution:** Updated with mobile-optimized formatting. Messages are now designed specifically for mobile Messenger interface.
+
+- **Issue:** Multiple help commands appearing.
+  - **Solution:** Fixed in latest update - consolidated into single comprehensive help system.
 
 # Facebook AppState C3C Tutorial 
 
@@ -352,69 +400,132 @@ This project allows you to utilize the Facebook app state for your bot. Follow t
 2. **Run Your Project**:
    - Start the project to see the bot in action using the app state.
 
-## 📝 Note
-- Keep your app state secure and do not share it publicly
-- App states expire periodically, so you may need to regenerate them
-- If you encounter login issues, try generating a fresh app state
-- Make sure to log into Facebook normally in a browser before generating the app state
+## 📝 Security & Maintenance Notes
+- Keep your app state secure and never share it publicly
+- App states expire periodically (usually 1-2 weeks)
+- Regenerate app state if you encounter frequent login failures
+- Log into Facebook normally in a browser before generating new app state
+- Use two-factor authentication on your Facebook account for security
 
-## 🔧 Advanced Configuration
+## 🔧 Advanced Configuration & Customization
 
-### Custom Smart Commands
-You can extend the smart command system by modifying the `smartCommands.js` file. Add new keyword detection functions and corresponding command handlers.
+### Smart Command Customization
+You can extend the smart command system by modifying detection patterns:
 
-### Adding New Events
-Create new event handlers in the `modules/events/` directory following the existing pattern.
+```javascript
+// Custom keyword detection
+function isCustomRequest(message) {
+  const customKeywords = ['your', 'custom', 'keywords'];
+  return customKeywords.some(keyword => message.includes(keyword));
+}
 
-### Cooldown System
-Commands support cooldowns to prevent spam. Set the `cooldowns` property in seconds in your command module.
+// Advanced regex patterns
+function isAdvancedRequest(message) {
+  return /your-advanced-regex-pattern/i.test(message);
+}
+```
 
-## 🤝 Support
-If you encounter any issues or need further assistance, please refer to the documentation or community forums.
+### WebSocket Integration
+Add your own real-time features:
+
+```javascript
+const WebSocket = require('ws');
+
+// Custom WebSocket handler
+function setupCustomWebSocket(threadID) {
+  const ws = new WebSocket('wss://your-api.com/data');
+  
+  ws.on('message', (data) => {
+    // Process real-time data
+    const response = design("Live Update", data);
+    api.sendMessage(response, threadID);
+  });
+  
+  return ws;
+}
+```
+
+### AI Response Customization
+Customize AI behavior and responses:
+
+```javascript
+// Custom AI prompt engineering
+async function customAIHandler(prompt, context) {
+  const enhancedPrompt = `
+    Context: ${context}
+    User Query: ${prompt}
+    Instructions: Provide helpful, accurate responses with a friendly tone.
+  `;
+  
+  // Your AI API call here
+  return await getAIResponse(enhancedPrompt);
+}
+```
+
+## 🤝 Support & Community
+
+### Getting Help
+- **Documentation**: Complete feature documentation available in this README
+- **Community Support**: Join our developer community for assistance
+- **Issue Reporting**: Report bugs or request features through GitHub issues
+- **Updates**: Check for regular updates and new features
+
+### Contributing
+We welcome contributions! Please follow these guidelines:
+1. Fork the repository
+2. Create a feature branch
+3. Test your changes thoroughly
+4. Submit a pull request with detailed description
+
+### Support the Project
+If NASHBOT helps you manage your Facebook groups effectively, consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs and issues
+- 💡 Suggesting new features
+- 📢 Sharing with other developers
 
 ---
 
-## 🧠 Smart Command System Architecture
+## 🧠 Advanced Smart Command System Architecture
 
-The smart command system in NASHBOT uses an intelligent priority-based detection mechanism that understands natural language without requiring command prefixes.
+The smart command system in NASHBOT uses an intelligent priority-based detection mechanism with advanced natural language processing capabilities.
 
-### 🔧 Core Components
+### 🔧 Core System Components
 
-#### 1. Priority-Based Command Detection
-The system processes commands in order of specificity to avoid conflicts:
+#### 1. Priority-Based Command Detection Engine
 ```javascript
-// Specific commands (high priority)
-- Download requests (Facebook URLs)
-- TikTok searches
-- Contact information
-- Speech synthesis
-- Rules queries
+// High Priority: Specific utility commands
+- Facebook video downloads (URL detection)
+- GAG stock tracking (WebSocket management)
+- TikTok searches (API integration)
+- Contact and information requests
 
-// General commands (medium priority)
-- Video requests
-- UID requests
-- Help commands
+// Medium Priority: General functionality
+- Video requests and media handling
+- User identification and group management
+- Notification broadcasting
 
-// AI queries (lowest priority)
-- General questions and conversations
+// Low Priority: AI conversation
+- Natural language questions
+- Educational queries
+- General conversation and chat
 ```
 
-#### 2. Keyword Detection Functions
-Each command type has its own detection function:
-- `isDownloadRequest()` - Detects Facebook video download requests
-- `isTikTokSearch()` - Identifies TikTok search queries
-- `isContactRequest()` - Recognizes contact information requests
-- `isAIQuery()` - Smart AI detection with conflict avoidance
+#### 2. Advanced Keyword Detection System
+- **Multi-language Support**: Detects commands in various languages
+- **Fuzzy Matching**: Handles typos and variations in command input
+- **Context Analysis**: Understands conversation context and intent
+- **Conflict Resolution**: Prevents command interference with smart prioritization
 
-#### 3. Cooldown System
-Prevents spam with a 3-second cooldown per user:
+#### 3. Enhanced Cooldown Management
 ```javascript
 const smartCooldowns = new Map();
-// Each user has individual cooldown tracking
+// Individual user tracking with automatic cleanup
+// Prevents spam while maintaining responsiveness
+// Configurable cooldown periods per command type
 ```
 
-#### 4. Message Formatting with Cassidy-Styler
-Enhanced message presentation using the `design()` function:
+#### 4. Professional Message Formatting
 ```javascript
 function design(title, content) {
     return format({
@@ -427,22 +538,35 @@ function design(title, content) {
 }
 ```
 
-### 🎯 Conflict Resolution Strategy
+### 🎯 Intelligent Conflict Resolution Strategy
 
-The system resolves command conflicts by:
-1. **Specific Pattern Matching**: Exact keyword matches get priority
-2. **Context Analysis**: Excludes common phrases from AI detection
-3. **Order of Operations**: Processes specific commands before general AI queries
-4. **Fallback Mechanism**: Defaults to AI chat for unmatched queries
+1. **Specific Pattern Matching**: Exact keyword matches receive highest priority
+2. **Context Analysis**: Analyzes message context to prevent false positives
+3. **Order of Operations**: Processes utility commands before conversational AI
+4. **Fallback Mechanism**: Gracefully defaults to AI chat for unmatched queries
+5. **Reply Context**: Maintains conversation context when replying to bot messages
 
-### 📊 Performance Features
+### 📊 Performance & Reliability Features
 
-- **Individual Cooldowns**: Per-user spam protection
-- **Efficient Processing**: Priority-based early returns
-- **Memory Management**: Automatic cooldown cleanup
-- **Error Handling**: Graceful fallbacks for failed operations
+- **Memory Optimization**: Efficient Map-based cooldown storage with auto-cleanup
+- **Error Recovery**: Comprehensive try-catch blocks with graceful fallbacks
+- **WebSocket Management**: Persistent connections with auto-reconnect capability
+- **Mobile Optimization**: Responsive design for mobile Messenger interface
+- **Real-Time Processing**: Sub-second response times with optimized detection algorithms
 
-## 🚀 Top Contributors
+### 🆕 Latest Technical Improvements
 
-- Joshua Apostol 
-- Cyril Encenso 
+- **Enhanced NLP**: Improved natural language processing with better intent recognition
+- **Mobile-First Design**: Notifications and responses optimized for mobile viewing
+- **Unified Command System**: Single comprehensive help system replacing multiple command lists
+- **Advanced Error Handling**: Robust error management for all media and API operations
+
+## 🚀 Top Contributors & Development Team
+
+- **Joshua Apostol** - Lead Developer
+- **Cyril Encenso** - Co-Lead Developer & WebSocket Implementation Expert, AI Integration Specialist
+
+---
+
+**NASHBOT** - Revolutionizing Facebook group management with intelligent AI assistance and real-time monitoring capabilities. Built with love for the developer community.
+
