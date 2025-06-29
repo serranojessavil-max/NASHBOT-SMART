@@ -5,6 +5,70 @@ const { exec } = require("child_process");
 const FormData = require("form-data");
 const { format } = require("cassidy-styler");
 const WebSocket = require("ws");
+const cheerio = require("cheerio");
+
+const ReplyHandler = {
+    replyMap: new Map(),
+    
+    register(messageID, data) {
+        this.replyMap.set(messageID, data);
+    },
+    
+    get(messageID) {
+        return this.replyMap.get(messageID);
+    },
+    
+    remove(messageID) {
+        this.replyMap.delete(messageID);
+    }
+};
+
+const API_CONFIG = {
+    FAB_DL: 'https://api.fabdl.com',
+    SPOTIFY_API: 'https://api.spotify.com/v1',
+    SPOTIFY_AUTH: 'https://accounts.spotify.com/api/token'
+};
+
+const SPOTIFY_CREDENTIALS = {
+    clientId: 'b0cdfaef5b0b401299244ef88df29ffb',
+    clientSecret: '3e5949b78a214aecb2558b861911c1a9'
+};
+
+let spotifyToken = null;
+let tokenExpiry = null;
+
+async function getSpotifyToken() {
+    if (spotifyToken && tokenExpiry && Date.now() < tokenExpiry) {
+        return spotifyToken;
+    }
+
+    try {
+        const response = await axios.post(API_CONFIG.SPOTIFY_AUTH, 
+            'grant_type=client_credentials',
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + Buffer.from(
+                        SPOTIFY_CREDENTIALS.clientId + ':' + SPOTIFY_CREDENTIALS.clientSecret
+                    ).toString('base64')
+                }
+            }
+        );
+
+        spotifyToken = response.data.access_token;
+        tokenExpiry = Date.now() + (response.data.expires_in * 1000);
+        return spotifyToken;
+    } catch (error) {
+        console.error('Failed to get Spotify token:', error);
+        throw error;
+    }
+}
+
+function formatSpotifyDuration(ms) {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
 function design(title, content) {
     return format({
         title,
@@ -80,53 +144,74 @@ function formatValue(val) {
 
 function addEmoji(name) {
     const emojis = {
-      
+
         "Common Egg": "🥚", "Uncommon Egg": "🐣", "Rare Egg": "🍳", "Legendary Egg": "🪺", "Mythical Egg": "🔮",
         "Bug Egg": "🪲", "Common Summer Egg": "🥚", "Rare Summer Egg": "🍳", "Paradise Egg": "🪩",
-        
+
         "Cleaning Spray": "🧴", "Friendship Pot": "🪴", "Watering Can": "🚿", "Trowel": "🛠️",
         "Recall Wrench": "🔧", "Basic Sprinkler": "💧", "Advanced Sprinkler": "💦", "Godly Sprinkler": "⛲",
         "Lightning Rod": "⚡", "Master Sprinkler": "🌊", "Favorite Tool": "❤️", "Harvest Tool": "🌾",
-        "Tanning Mirror": "🪞", "Magnifying Glass": "🪞",
-        
+        "Tanning Mirror": "🪞", "Magnifying Glass": "🔍",
+
         "Carrot": "🥕", "Strawberry": "🍓", "Blueberry": "🫐", "Cauliflower": "🌷",
         "Tomato": "🍅", "Green Apple": "🍏", "Avocado": "🥑", "Watermelon": "🍉", "Banana": "🍌",
         "Pineapple": "🍍", "Bell Pepper": "🌶️", "Prickly Pear": "🍐", "Loquat": "🍒",
         "Kiwi": "🥝", "Feijoa": "🍈", "Sugar Apple": "🍏",
-        
+
         "Sunglasses": "🕶️", "Hat": "🎩", "Crown": "👑", "Bow": "🎀", "Glasses": "👓",
         "Mask": "🎭", "Earrings": "💍", "Necklace": "📿", "Bracelet": "⌚", "Ring": "💎",
-        "Scarf": "🧣", "Headband": "🎪", "Tiara": "💄", "Lipstick": "💋", "Nail Polish": "💅"
+        "Scarf": "🧣", "Headband": "🎪", "Tiara": "👸", "Lipstick": "💄", "Nail Polish": "💅",
+        "Piercing": "💍", "Watch": "⌚", "Choker": "📿", "Pendant": "💍"
     };
 
     const highlightedItems = [
-     
-        "𝐋𝐞𝐠𝐞𝐧𝐝𝐚𝐫𝐲 𝐄𝐠𝐠", "𝐌𝐲𝐭𝐡𝐢𝐜𝐚𝐥 𝐄𝐠𝐠", "𝐁𝐮𝐠 𝐄𝐠𝐠", "𝐏𝐚𝐫𝐚𝐝𝐢𝐬𝐞 𝐄𝐠𝐠",
-        
-        "𝐅𝐫𝐢𝐞𝐧𝐝𝐬𝐡𝐢𝐩 𝐏𝐨𝐭", "𝐆𝐨𝐝𝐥𝐲 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫", "𝐋𝐢𝐠𝐡𝐭𝐧𝐢𝐧𝐠 𝐑𝐨𝐝", 
-        "𝐌𝐚𝐬𝐭𝐞𝐫 𝐒𝐩𝐫𝐢𝐧𝐤𝐥𝐞𝐫", "𝐓𝐚𝐧𝐧𝐢𝐧𝐠 𝐌𝐢𝐫𝐫𝐨𝐫",
-        
-        "𝐁𝐞𝐥𝐥 𝐏𝐞𝐩𝐩𝐞𝐫", "𝐏𝐫𝐢𝐜𝐤𝐥𝐲 𝐏𝐞𝐚𝐫", "𝐋𝐨𝐪𝐮𝐚𝐭", "𝐊𝐢𝐰𝐢", "𝐅𝐞𝐢𝐣𝐨𝐚", "𝐒𝐮𝐠𝐚𝐫 𝐀𝐩𝐩𝐥𝐞",
-        
-        "Crown", "Tiara", "Diamond Ring", "Golden Necklace", "Rare Hat", "Special Glasses",
-        "Legendary Sunglasses", "Mythical Crown", "Rainbow Bow", "Crystal Earrings"
+
+        "Legendary Egg", "Mythical Egg", "Bug Egg", "Paradise Egg",
+
+        "Friendship Pot", "Godly Sprinkler", "Lightning Rod", 
+        "Master Sprinkler", "Tanning Mirror",
+
+        "Bell Pepper", "Prickly Pear", "Loquat", "Kiwi", "Feijoa", "Sugar Apple",
+
+        "Crown", "Tiara", "Ring", "Necklace", "Earrings"
     ];
 
-    const rarityKeywords = ['legendary', 'mythical',  'divine', 'rainbow', 'prismatic'];
+    const rarityKeywords = ['legendary', 'mythical', 'prismatic'];
     const hasRarityKeyword = rarityKeywords.some(keyword => name.toLowerCase().includes(keyword));
 
-    const emoji = emojis[name] || "❓";
-    
+    const emoji = emojis[name] || getDefaultEmoji(name);
+
     const isHighlighted = highlightedItems.includes(name) || 
                          /[\u{1D400}-\u{1D7FF}]/u.test(name) || 
                          hasRarityKeyword;
 
     if (isHighlighted) {
-      
-        return `🌟 ${emoji} 【${name}】`;
+        return `✨ ${emoji} **${name}**`;
     } else {
         return `${emoji} ${name}`;
     }
+}
+
+function getDefaultEmoji(name) {
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.includes('egg')) return "🥚";
+
+    if (lowerName.includes('sprinkler')) return "💧";
+    if (lowerName.includes('tool') || lowerName.includes('wrench') || lowerName.includes('trowel')) return "🔧";
+    if (lowerName.includes('spray') || lowerName.includes('can')) return "🧴";
+    if (lowerName.includes('mirror') || lowerName.includes('glass')) return "🪞";
+
+    if (lowerName.includes('seed') || lowerName.includes('plant')) return "🌱";
+    if (lowerName.includes('fruit')) return "🍎";
+    if (lowerName.includes('vegetable')) return "🥬";
+
+    if (lowerName.includes('hat') || lowerName.includes('cap')) return "🎩";
+    if (lowerName.includes('glasses') || lowerName.includes('sunglasses')) return "👓";
+    if (lowerName.includes('jewelry') || lowerName.includes('ring') || lowerName.includes('necklace')) return "💍";
+    if (lowerName.includes('cosmetic') || lowerName.includes('makeup')) return "💄";
+
+    return "❓";
 }
 
 async function isNaturalConversation(message) {
@@ -148,7 +233,7 @@ Respond with only "true" or "false":`;
         const result = response.data.response.toLowerCase().trim();
         return result === "true";
     } catch (error) {
-       
+
         const simpleConversationIndicators = [
             message.endsWith('?'),
             message.length > 10 && /\b(how|what|when|where|why|who|which|can you|could you|would you|tell me|explain|help)\b/i.test(message),
@@ -173,6 +258,13 @@ module.exports = {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         const isAdmin = senderID === config.adminUID;
 
+        if (event.messageReply && event.messageReply.senderID === api.getCurrentUserID()) {
+            const replyData = ReplyHandler.get(event.messageReply.messageID);
+            if (replyData && replyData.cmdname === 'spotify') {
+                return module.exports.onReply(api, event, replyData);
+            }
+        }
+
         const userId = senderID;
         const cooldownTime = 5000; 
         const now = Date.now();
@@ -196,6 +288,14 @@ module.exports = {
             return handleDownload(api, event, body, threadID, messageID);
         }
 
+        if (isSpotifyRequest(message)) {
+            return handleSpotify(api, event, body, threadID, messageID);
+        }
+
+        if (isInstagramRequest(message, body)) {
+            return handleInstagram(api, event, body, threadID, messageID);
+        }
+
         if (isTikTokSearch(message)) {
             return handleTikTokSearch(api, event, body, threadID, messageID);
         }
@@ -206,6 +306,10 @@ module.exports = {
 
         if (isAIToggleRequest(message)) {
             return handleAIToggle(api, event, body, threadID, messageID);
+        }
+
+        if (isGojoToggleRequest(message)) {
+            return handleGojoToggle(api, event, body, threadID, messageID);
         }
 
         if (isAriaRequest(message)) {
@@ -271,15 +375,205 @@ module.exports = {
         }
 
         const aiEnabled = aiToggleStates.get(threadID) || false;
+        const gojoEnabled = gojoToggleStates.get(threadID) || false; 
 
         if (event.messageReply && event.messageReply.senderID === api.getCurrentUserID()) {
-            return handleAIQuery(api, event, body, threadID, messageID);
+          
+            const replyData = ReplyHandler.get(event.messageReply.messageID);
+            if (replyData && replyData.cmdname === 'spotify') {
+                return module.exports.onReply(api, event, replyData);
+            }
+            
+            if (gojoEnabled) {
+                return handleGojoAutoResponse(api, event, body, threadID, messageID);
+            } else if (aiEnabled) {
+                return handleAIQuery(api, event, body, threadID, messageID);
+            }
+           
+            return;
         }
 
         if (aiEnabled) {
             return handleAIQuery(api, event, body, threadID, messageID);
         }
 
+        if (gojoEnabled) {
+             return handleGojoAutoResponse(api, event, body, threadID, messageID);
+        }
+
+    },
+
+    async onReply(api, event, replyData) {
+        const { threadID, messageID, body, senderID } = event;
+        
+        if (replyData.cmdname === 'spotify') {
+           
+            if (senderID !== replyData.data.originalRequester) {
+                const accessMsg = `
+╭─────────────────────╮
+│   🚫 𝗔𝗖𝗖𝗘𝗦𝗦 𝗗𝗘𝗡𝗜𝗘𝗗   │
+╰─────────────────────╯
+
+❌ 𝗢𝗻𝗹𝘆 𝘁𝗵𝗲 𝗼𝗿𝗶𝗴𝗶𝗻𝗮𝗹 𝗿𝗲𝗾𝘂𝗲𝘀𝘁𝗲𝗿
+   𝗰𝗮𝗻 𝗰𝗵𝗼𝗼𝘀𝗲 𝗮 𝘀𝗼𝗻𝗴
+
+💡 𝗦𝘁𝗮𝗿𝘁 𝘆𝗼𝘂𝗿 𝗼𝘄𝗻 𝘀𝗲𝗮𝗿𝗰𝗵!
+
+━━━━━━━━━━━━━━━━━━━
+🎵 Use: spotify [song name]`;
+                return api.sendMessage(accessMsg, threadID, messageID);
+            }
+            
+            const choice = parseInt(body.trim());
+            
+            if (isNaN(choice) || choice < 1 || choice > replyData.data.tracks.length) {
+                const invalidMsg = `
+╭─────────────────────╮
+│   ❌ 𝗜𝗡𝗩𝗔𝗟𝗜𝗗 𝗖𝗛𝗢𝗜𝗖𝗘   │
+╰─────────────────────╯
+
+🚫 𝗣𝗹𝗲𝗮𝘀𝗲 𝗰𝗵𝗼𝗼𝘀𝗲 𝗮 𝘃𝗮𝗹𝗶𝗱 𝗻𝘂𝗺𝗯𝗲𝗿
+
+📝 𝗔𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲: 1-${replyData.data.tracks.length}
+
+💡 𝗥𝗲𝗽𝗹𝘆 𝘄𝗶𝘁𝗵 𝘆𝗼𝘂𝗿 𝗰𝗵𝗼𝗶𝗰𝗲
+
+━━━━━━━━━━━━━━━━━━━
+🎵 Pick your favorite song!`;
+                return api.sendMessage(invalidMsg, threadID, messageID);
+            }
+            
+            const selectedTrack = replyData.data.tracks[choice - 1];
+            
+            api.unsendMessage(replyData.messageID);
+            
+            const preparingMsg = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗗𝗟   │
+╰─────────────────────╯
+
+🎶 ${selectedTrack.title}
+🎤 ${selectedTrack.artist}
+
+⚙️ 𝗣𝗿𝗲𝗽𝗮𝗿𝗶𝗻𝗴 𝗱𝗼𝘄𝗻𝗹𝗼𝗮𝗱...
+
+━━━━━━━━━━━━━━━━━━━
+🎧 Getting your music ready!`;
+            
+            api.sendMessage(preparingMsg, threadID, async (err, info) => {
+                if (err) return console.error(err);
+
+                try {
+                    const trackInfo = await axios.get(`${API_CONFIG.FAB_DL}/spotify/get?url=${selectedTrack.url}`);
+                    const track = trackInfo.data.result;
+
+                    const downloadData = await axios.get(
+                        `${API_CONFIG.FAB_DL}/spotify/mp3-convert-task/${track.gid}/${track.id}`
+                    );
+                    const mp3Info = downloadData.data.result;
+                    
+                    const downloadingMsg = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗗𝗟   │
+╰─────────────────────╯
+
+🎶 ${selectedTrack.title}
+🎤 ${selectedTrack.artist}
+
+⬇️ 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗶𝗻𝗴 𝗮𝘂𝗱𝗶𝗼...
+
+━━━━━━━━━━━━━━━━━━━
+🎧 Almost ready!`;
+                    
+                    api.editMessage(downloadingMsg, info.messageID);
+                    
+                    const tempDir = path.join(__dirname, 'temp');
+                    if (!fs.existsSync(tempDir)) {
+                        fs.mkdirSync(tempDir);
+                    }
+                    
+                    const audioPath = path.join(tempDir, `spotify_${Date.now()}.mp3`);
+                    const writer = fs.createWriteStream(audioPath);
+                    
+                    const audioResponse = await axios({
+                        method: 'get',
+                        url: `${API_CONFIG.FAB_DL}${mp3Info.download_url}`,
+                        responseType: 'stream'
+                    });
+                    
+                    audioResponse.data.pipe(writer);
+                    
+                    await new Promise((resolve, reject) => {
+                        writer.on('finish', resolve);
+                        writer.on('error', reject);
+                    });
+
+                    const sendingMsg = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗗𝗟   │
+╰─────────────────────╯
+
+🎶 ${selectedTrack.title}
+🎤 ${selectedTrack.artist}
+
+📤 𝗦𝗲𝗻𝗱𝗶𝗻𝗴 𝗮𝘂𝗱𝗶𝗼...
+
+━━━━━━━━━━━━━━━━━━━
+🎧 Here comes your music!`;
+
+                    api.editMessage(sendingMsg, info.messageID);
+                    
+                    const messageBody = `
+╭─────────────────────╮
+│   ✅ 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗 𝗦𝗨𝗖𝗖𝗘𝗦𝗦   │
+╰─────────────────────╯
+
+🎵 ${selectedTrack.title}
+🎤 ${selectedTrack.artist}
+⏱️ ${formatSpotifyDuration(selectedTrack.duration)}
+
+━━━━━━━━━━━━━━━━━━━
+
+🔗 𝗗𝗶𝗿𝗲𝗰𝘁 𝗟𝗶𝗻𝗸:
+${API_CONFIG.FAB_DL}${mp3Info.download_url}
+
+━━━━━━━━━━━━━━━━━━━
+🎧 𝗘𝗻𝗷𝗼𝘆 𝘆𝗼𝘂𝗿 𝗺𝘂𝘀𝗶𝗰! ✨`;
+                    
+                    api.sendMessage(messageBody, threadID);
+                    
+                    const audioStream = fs.createReadStream(audioPath);
+                    api.sendMessage({
+                        attachment: audioStream
+                    }, threadID, async () => {
+                        fs.unlinkSync(audioPath);
+                        api.unsendMessage(info.messageID);
+                    });
+
+                    ReplyHandler.remove(replyData.messageID);
+
+                } catch (error) {
+                    console.error("Spotify download error:", error);
+                    const errorMsg = `
+╭─────────────────────╮
+│   ❌ 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗 𝗘𝗥𝗥𝗢𝗥   │
+╰─────────────────────╯
+
+🚫 𝗙𝗮𝗶𝗹𝗲𝗱 𝘁𝗼 𝗱𝗼𝘄𝗻𝗹𝗼𝗮𝗱
+
+⚠️ ${error.message}
+
+💡 𝗣𝗹𝗲𝗮𝘀𝗲:
+   • Try again later
+   • Search for another song
+   • Check your connection
+
+━━━━━━━━━━━━━━━━━━━
+🔄 Ready to try again!`;
+                    api.editMessage(errorMsg, info.messageID);
+                }
+            }, messageID);
+        }
     }
 };
 
@@ -305,6 +599,15 @@ function isAIToggleRequest(message) {
            (message.includes('off ai') || message.includes('ai off') || 
             message.includes('disable ai') || message.includes('turn off ai') ||
             message === 'off');
+}
+
+const gojoToggleStates = new Map();
+
+function isGojoToggleRequest(message) {
+    return (message.includes('on gojo') || message.includes('gojo on') || 
+            message.includes('enable gojo') || message.includes('turn on gojo')) ||
+           (message.includes('off gojo') || message.includes('gojo off') || 
+            message.includes('disable gojo') || message.includes('turn off gojo'));
 }
 
 function isAriaRequest(message) {
@@ -358,7 +661,7 @@ function isHelpRequest(message) {
 }
 
 function isCommandListRequest(message) {
- 
+
     return false;
 }
 
@@ -390,6 +693,19 @@ function isEvalCommand(message) {
 
 function isListBoxRequest(message) {
     return message.includes('list') && (message.includes('group') || message.includes('box'));
+}
+
+function isSpotifyRequest(message) {
+    return message.includes('spotify') || message.includes('music') || 
+           message.includes('song') || message.includes('play') ||
+           message.includes('search music') || message.includes('find song') ||
+           message.includes('download music') || message.includes('spot');
+}
+
+function isInstagramRequest(message, fullBody) {
+    return (message.includes('instagram') || message.includes('ig') || 
+            message.includes('insta') || message.includes('download ig')) &&
+           fullBody.includes('instagram.com');
 }
 
 async function handleAIToggle(api, event, body, threadID, messageID) {
@@ -449,6 +765,112 @@ async function handleAIToggle(api, event, body, threadID, messageID) {
     }
 }
 
+async function handleGojo(api, event, body, threadID, messageID) {
+    const query = body.replace(/gojo|satoru|gojo sensei|gojo-sensei|ask gojo|hey gojo/gi, '').trim();
+
+    if (!query) {
+        return api.sendMessage("What do you want to ask Gojo-sensei?", threadID, messageID);
+    }
+
+    if (!global.handle) global.handle = {};
+    if (!global.handle.replies) global.handle.replies = {};
+
+    const data = JSON.stringify({
+        context: [
+            {
+                message: query,
+                turn: "user",
+                media_id: null
+            }
+        ],
+        strapi_bot_id: "594494",
+        output_audio: false,
+        enable_proactive_photos: true
+    });
+
+    api.sendMessage("💬 Please wait.", threadID, async (err, info) => {
+        if (err) return;
+
+        try {
+            const response = await axios.post("https://api.exh.ai/chatbot/v4/botify/response", data, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0",
+                    "Content-Type": "application/json",
+                    "x-auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYTI0ZDI1Ny1lZDU1LTQxMzQtODczNS02OWM2OTNlZTVmMWQiLCJmaXJlYmFzZV91c2VyX2lkIjoiS2N3OHBsY1hnMVZCcUJNUkRNRzE0aGZnT3htMiIsImRldmljZV9pZCI6bnVsbCwidXNlciI6IktjdzhwbGNYZzFWQnFCTVJETUcxNGhmZ094bTIiLCJhY2Nlc3NfbGV2ZWwiOiJiYXNpYyIsInBsYXRmb3JtIjoid2ViIiwiZXhwIjoxNzM4NDE3NjkzfQ.3iG94WtfH3xofn70ErELfX_P2d0j4fmUkUdFBwCLQ8o",
+                    "authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VybmFtZSI6ImJvdGlmeS13ZWItdjMifQ.O-w89I5aX2OE_i4k6jdHZJEDWECSUfOb1lr9UdVH4oTPMkFGUNm9BNzoQjcXOu8NEiIXq64-481hnenHdUrXfg"
+                }
+            });
+
+            const reply = response.data.responses[0].response;
+            api.editMessage(reply, info.messageID);
+
+            global.handle.replies[info.messageID] = {
+                cmdname: 'gojo',
+                this_mid: info.messageID,
+                this_tid: info.threadID,
+                tid: threadID,
+                mid: messageID
+            };
+        } catch (error) {
+            console.error("Gojo error:", error);
+            api.editMessage("❌ Gojo-sensei is currently unavailable. Try again later.", info.messageID);
+        }
+    }, messageID);
+}
+
+async function handleGojoAutoResponse(api, event, body, threadID, messageID) {
+    const query = body.trim();
+
+    if (!query) {
+        return api.sendMessage("Gojo-sensei is listening... What do you want to say?", threadID, messageID);
+    }
+
+    if (!global.handle) global.handle = {};
+    if (!global.handle.replies) global.handle.replies = {};
+
+    const data = JSON.stringify({
+        context: [
+            {
+                message: query,
+                turn: "user",
+                media_id: null
+            }
+        ],
+        strapi_bot_id: "594494",
+        output_audio: false,
+        enable_proactive_photos: true
+    });
+
+    api.sendMessage("💬 Please wait.", threadID, async (err, info) => {
+        if (err) return;
+
+        try {
+            const response = await axios.post("https://api.exh.ai/chatbot/v4/botify/response", data, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0",
+                    "Content-Type": "application/json",
+                    "x-auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYTI0ZDI1Ny1lZDU1LTQxMzQtODczNS02OWM2OTNlZTVmMWQiLCJmaXJlYmFzZV91c2VyX2lkIjoiS2N3OHBsY1hnMVZCcUJNUkRNRzE0aGZnT3htMiIsImRldmljZV9pZCI6bnVsbCwidXNlciI6IktjdzhwbGNYZzFWQnFCTVJETUcxNGhmZ094bTIiLCJhY2Nlc3NfbGV2ZWwiOiJiYXNpYyIsInBsYXRmb3JtIjoid2ViIiwiZXhwIjoxNzM4NDE3NjkzfQ.3iG94WtfH3xofn70ErELfX_P2d0j4fmUkUdFBwCLQ8o",
+                    "authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VybmFtZSI6ImJvdGlmeS13ZWItdjMifQ.O-w89I5aX2OE_i4k6jdHZJEDWECSUfOb1lr9UdVH4oTPMkFGUNm9BNzoQjcXOu8NEiIXq64-481hnenHdUrXfg"
+                }
+            });
+
+            const reply = response.data.responses[0].response;
+            api.editMessage(reply, info.messageID);
+
+            global.handle.replies[info.messageID] = {
+                cmdname: 'gojo',
+                this_mid: info.messageID,
+                this_tid: info.threadID,
+                tid: threadID,
+                mid: messageID
+            };
+        } catch (error) {
+            console.error("Gojo error:", error);
+            api.editMessage("❌ Gojo-sensei is currently unavailable. Try again later.", info.messageID);
+        }
+    }, messageID);
+}
+
 async function handleAIQuery(api, event, body, threadID, messageID) {
     const prompt = body.trim();
 
@@ -473,7 +895,7 @@ function handleContact(api, threadID, messageID) {
    📱 fb.com/joshuaapostol2006
    💻 github.com/joshuaApos
 
-👨‍💻 CO-LEAD DEVELOPER  
+👨‍💻 CO-DEVELOPER  
    Cyril Encenso
    📧 Amigohaycyril10@gmail.com
    📱 fb.com/cyypookie
@@ -784,7 +1206,6 @@ function handleComprehensiveHelp(api, threadID, messageID, prefix) {
    • Educational explanations & tutorials
    • Text analysis, translation & generation
    • General conversation & casual chat
-   • Reply to bot messages for context-aware responses
 
 🎮 𝗚𝗿𝗼𝘄 𝗔 𝗚𝗮𝗿𝗱𝗲𝗻 𝗟𝗶𝘃𝗲 𝗧𝗿𝗮𝗰𝗸𝗲𝗿
    • "gag stock" - Current stock status with timers
@@ -799,6 +1220,8 @@ function handleComprehensiveHelp(api, threadID, messageID, prefix) {
 📹 𝗠𝗲𝗱𝗶𝗮 & 𝗘𝗻𝘁𝗲𝗿𝘁𝗮𝗶𝗻𝗺𝗲𝗻𝘁
    • "video" / "shoti" / "girl" - Random TikTok videos
    • "TikTok [search term]" - Search specific content
+   • "spotify [song name]" / "music [song]" - Search & download Spotify songs
+   • "instagram [URL]" / "ig [URL]" - Download Instagram videos
    • "Download [Facebook URL]" - High-quality video downloads
    • "women" / "babae" - Special meme content
    • Auto-cleanup of temporary files
@@ -860,6 +1283,10 @@ function handleComprehensiveHelp(api, threadID, messageID, prefix) {
    • "What's 15 × 25 + 100?"
    • "How do I center a div in CSS?"
    • "Show me a funny TikTok video"
+   • "spotify shape of you" / "music despacito"
+   • "instagram https://instagram.com/p/xyz"
+   • "on gojo" / "off gojo" - Toggle Gojo auto-mode
+   • "gojo what's your domain expansion?" / "ask gojo about jujutsu"
    • "Download this: [Facebook Video URL]"
    • "What are the rules of this group?"
    • "${prefix}help" (traditional command example)
@@ -1289,11 +1716,11 @@ async function handleCurrentStatus(api, threadID, messageID) {
         }).join("\n");
 
         let content = "";
-        content += `🛠️ 𝗚𝗘𝗔𝗥𝗦:\n${formatList(stockData.gear.items)}\n⏳ Restock In: ${restocks.gear}\n\n`;
-        content += `🌱 𝗦𝗘𝗘𝗗𝗦:\n${formatList(stockData.seed.items)}\n⏳ Restock In: ${restocks.seed}\n\n`;
-        content += `🥚 𝗘𝗚𝗚𝗦:\n${formatList(stockData.egg.items)}\n⏳ Restock In: ${restocks.egg}\n\n`;
-        content += `🎨 𝗖𝗢𝗦𝗠𝗘𝗧𝗜𝗖𝗦:\n${formatList(stockData.cosmetics.items)}\n⏳ Restock In: ${restocks.cosmetics}\n\n`;
-        content += `☀️ 𝗦𝗨𝗠𝗠𝗘𝗥 𝗘𝗩𝗘𝗡𝗧:\n🎯 Event: Summer Event 2025\n📊 Status: Active\n📝 Special summer activities and rewards\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
+        content += `🛠️ 𝐆𝐄𝐀𝐑𝐒:\n${formatList(stockData.gear.items)}\n⏳ Restock In: ${restocks.gear}\n\n`;
+        content += `🌱 𝐒𝐄𝐄𝐃𝐒:\n${formatList(stockData.seed.items)}\n⏳ Restock In: ${restocks.seed}\n\n`;
+        content += `🥚 𝐄𝐆𝐆𝐒:\n${formatList(stockData.egg.items)}\n⏳ Restock In: ${restocks.egg}\n\n`;
+        content += `🎨 𝐂𝐎𝐒𝐌𝐄𝐓𝐈𝐂𝐒:\n${formatList(stockData.cosmetics.items)}\n⏳ Restock In: ${restocks.cosmetics}\n\n`;
+        content += `☀️ 𝐒𝐔𝐌𝐌𝐄𝐑 𝐄𝐕𝐄𝐍𝐓:\n🎯 Event: Summer Event 2025\n📊 Status: Active\n📝 Special summer activities and rewards\n⏳ Next Update: ${restocks.summerEvent}\n\n`;
 
         const updatedAtPH = getPHTime().toLocaleString("en-PH", {
             hour: "numeric", minute: "numeric", second: "numeric",
@@ -1301,7 +1728,7 @@ async function handleCurrentStatus(api, threadID, messageID) {
         });
 
         const weather = await axios.get("https://growagardenstock.com/api/stock/weather").then(res => res.data).catch(() => null);
-        const weatherInfo = weather ? `🌤️ 𝗪𝗘𝗔𝗧𝗛𝗘𝗥: ${weather.icon} ${weather.weatherType}\n📋 ${weather.description}\n🎯 ${weather.cropBonuses}\n\n` : "";
+        const weatherInfo = weather ? `🌤️ 𝐖𝐄𝐀𝐓𝐇𝐄𝐑: ${weather.icon} ${weather.weatherType}\n📋 ${weather.description}\n🎯 ${weather.cropBonuses}\n\n` : "";
 
         const statusContent = `----------------------------------
 
@@ -1365,4 +1792,300 @@ function handleWomen(api, threadID, messageID) {
     api.setMessageReaction('☕', messageID, (err) => {
         if (err) console.error('Error setting reaction:', err);
     });
+}
+
+async function handleSpotify(api, event, body, threadID, messageID) {
+    const query = body.replace(/spotify|music|song|play|search music|find song|download music|spot/gi, '').trim();
+
+    if (!query) {
+        const errorMsg = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗠𝗨𝗦𝗜𝗖   │
+╰─────────────────────╯
+
+❌ 𝗣𝗹𝗲𝗮𝘀𝗲 𝘀𝗽𝗲𝗰𝗶𝗳𝘆 𝗮 𝘀𝗼𝗻𝗴 𝗻𝗮𝗺𝗲
+
+💡 𝗘𝘅𝗮𝗺𝗽𝗹𝗲:
+   • spotify shape of you
+   • music despacito
+   • song blinding lights
+
+━━━━━━━━━━━━━━━━━━━
+🎧 Ready to find your music!`;
+        return api.sendMessage(errorMsg, threadID, messageID);
+    }
+
+    const searchingMsg = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗦𝗘𝗔𝗥𝗖𝗛   │
+╰─────────────────────╯
+
+🔍 𝗦𝗲𝗮𝗿𝗰𝗵𝗶𝗻𝗴 𝗳𝗼𝗿: "${query}"
+
+⏳ 𝗣𝗹𝗲𝗮𝘀𝗲 𝘄𝗮𝗶𝘁...`;
+
+    api.sendMessage(searchingMsg, threadID, async (err, info) => {
+        if (err) return console.error(err);
+
+        try {
+            const token = await getSpotifyToken();
+            const searchResults = await axios.get(
+                `${API_CONFIG.SPOTIFY_API}/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+            
+            const tracks = searchResults.data.tracks.items;
+            
+            if (tracks.length === 0) {
+                const noResultsMsg = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗦𝗘𝗔𝗥𝗖𝗛   │
+╰─────────────────────╯
+
+❌ 𝗡𝗼 𝘀𝗼𝗻𝗴𝘀 𝗳𝗼𝘂𝗻𝗱
+
+🔍 𝗦𝗲𝗮𝗿𝗰𝗵: "${query}"
+
+💡 𝗧𝗿𝘆:
+   • Different keywords
+   • Artist + song name
+   • Check spelling
+
+━━━━━━━━━━━━━━━━━━━
+🎧 Keep searching for music!`;
+                return api.editMessage(noResultsMsg, info.messageID);
+            }
+
+            let resultMessage = `
+╭─────────────────────╮
+│   🎵 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗥𝗘𝗦𝗨𝗟𝗧𝗦   │
+╰─────────────────────╯
+
+🔍 𝗤𝘂𝗲𝗿𝘆: "${query}"
+📊 𝗙𝗼𝘂𝗻𝗱: ${tracks.length} songs
+
+━━━━━━━━━━━━━━━━━━━
+
+`;
+            
+            const searchData = [];
+            
+            tracks.forEach((track, index) => {
+                const title = track.name;
+                const artist = track.artists.map(artist => artist.name).join(', ');
+                const duration = formatSpotifyDuration(track.duration_ms);
+                const cover = track.album.images[0]?.url;
+                
+                resultMessage += `🎵 ${index + 1}. ${title}\n`;
+                resultMessage += `   🎤 ${artist}\n`;
+                resultMessage += `   ⏱️ ${duration}\n`;
+                resultMessage += `   ──────────────\n`;
+                
+                searchData.push({
+                    id: track.id,
+                    title: title,
+                    artist: artist,
+                    duration: track.duration_ms,
+                    cover: cover,
+                    url: track.external_urls.spotify
+                });
+            });
+            
+            resultMessage += `
+━━━━━━━━━━━━━━━━━━━
+
+💡 𝗥𝗲𝗽𝗹𝘆 𝘄𝗶𝘁𝗵 𝗮 𝗻𝘂𝗺𝗯𝗲𝗿 (𝟭-${tracks.length})
+📱 𝗘𝘅𝗮𝗺𝗽𝗹𝗲: Reply "1" for first song
+
+🎧 Ready to download your music!`;
+            
+            api.editMessage(resultMessage, info.messageID);
+            
+            ReplyHandler.register(info.messageID, {
+                name: 'spotify',
+                author: event.senderID,
+                cmdname: 'spotify',
+                data: {
+                    tracks: searchData,
+                    query: query,
+                    originalRequester: event.senderID
+                }
+            });
+
+        } catch (error) {
+            console.error("Spotify search error:", error);
+            const errorMsg = `
+╭─────────────────────╮
+│   ❌ 𝗦𝗣𝗢𝗧𝗜𝗙𝗬 𝗘𝗥𝗥𝗢𝗥   │
+╰─────────────────────╯
+
+🚫 𝗦𝗲𝗮𝗿𝗰𝗵 𝗳𝗮𝗶𝗹𝗲𝗱
+
+⚠️ 𝗘𝗿𝗿𝗼𝗿: ${error.message}
+
+💡 𝗣𝗹𝗲𝗮𝘀𝗲:
+   • Try again later
+   • Check your connection
+   • Use different keywords
+
+━━━━━━━━━━━━━━━━━━━
+🔄 Ready to try again!`;
+            api.editMessage(errorMsg, info.messageID);
+        }
+    }, messageID);
+}
+
+async function handleInstagram(api, event, body, threadID, messageID) {
+    const urlMatch = body.match(/(https?:\/\/(?:www\.)?instagram\.com\/[^\s]+)/);
+
+    if (!urlMatch) {
+        return api.sendMessage("Please provide a valid Instagram video URL.", threadID, messageID);
+    }
+
+    const igUrl = urlMatch[0];
+
+    api.sendMessage("Please wait...", threadID, async (err, info) => {
+        if (err) return console.error(err);
+
+        try {
+            const encodedUrl = encodeURIComponent(igUrl);
+            const targetUrl = `https://insta-save.net/content.php?url=${encodedUrl}`;
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            };
+
+            const response = await axios.get(targetUrl, { headers });
+
+            if (response.data.status !== "ok" || !response.data.html) {
+                throw new Error("Failed to fetch video data from Instagram");
+            }
+
+            const cheerio = require('cheerio');
+            const $ = cheerio.load(response.data.html);
+
+            const username = $('p.h4').text().trim();
+            const description = $('p[style*="word-break: break-word"]').text().trim();
+
+            const hdLink = $('a.bg-gradient-success').attr('href');
+
+            if (!hdLink) {
+                throw new Error("HD download link not found");
+            }
+
+            api.editMessage("⬇️ Downloading video...", info.messageID);
+
+            const tempDir = path.join(__dirname, 'temp');
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir);
+            }
+
+            const videoPath = path.join(tempDir, `ig_video_${Date.now()}.mp4`);
+            const writer = fs.createWriteStream(videoPath);
+
+            const videoResponse = await axios({
+                method: 'get',
+                url: hdLink,
+                responseType: 'stream',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+
+            videoResponse.data.pipe(writer);
+
+            await new Promise((resolve, reject) => {
+                writer.on('finish', resolve);
+                writer.on('error', reject);
+            });
+
+            api.editMessage("📤 Sending video...", info.messageID);
+
+            const videoStream = fs.createReadStream(videoPath);
+
+            const messageBody = `【 𝗡𝗔𝗦𝗛 】𝗜𝗚 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗲𝗿 📱
+──────────────────
+👤 𝗨𝘀𝗲𝗿: ${username || "Instagram User"}
+${description ? `📝 𝗗𝗲𝘀𝗰𝗿𝗶𝗽𝘁𝗶𝗼𝗻: ${description.substring(0, 100)}${description.length > 100 ? '...' : ''}` : ''}
+✅ 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: HD
+──────────────────`;
+
+            api.sendMessage({
+                body: messageBody,
+                attachment: videoStream
+            }, threadID, async () => {
+                fs.unlinkSync(videoPath);
+                api.unsendMessage(info.messageID);
+            });
+
+        } catch (error) {
+            console.error("Instagram download error:", error);
+            const errorMessage = `【 𝗡𝗔𝗦𝗛 】𝗜𝗚 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗲𝗿 📱
+──────────────────
+❌ 𝗘𝗿𝗿𝗼𝗿: ${error.message}
+🔧 𝗣𝗹𝗲𝗮𝘀𝗲 𝗰𝗵𝗲𝗰𝗸 𝘆𝗼𝘂𝗿 𝗨𝗥𝗟
+🔄 𝗧𝗿𝘆 𝗮𝗴𝗮𝗶𝗻 𝗹𝗮𝘁𝗲𝗿
+──────────────────`;
+            api.editMessage(errorMessage, info.messageID);
+        }
+    }, messageID);
+}
+
+async function handleGojoToggle(api, event, body, threadID, messageID) {
+    const message = body.toLowerCase().trim();
+
+    if (message.includes('on gojo') || message.includes('gojo on') || message.includes('enable gojo') || message.includes('turn on gojo')) {
+        gojoToggleStates.set(threadID, true);
+
+        const onContent = `----------------------------------
+
+😈 𝗚𝗢𝗝𝗢 𝗔𝗨𝗧𝗢 𝗠𝗢𝗗𝗘 𝗔𝗖𝗧𝗜𝗩𝗔𝗧𝗘𝗗
+
+✅ Gojo responses are now ENABLED
+🧠 Gojo will respond to ANY message naturally
+💬 No need for specific keywords anymore
+🎯 Just talk to Gojo like a normal conversation
+
+----------------------------------
+
+💡 Examples of what Gojo can do:
+   • Answer any questions
+   • Help with problems
+   • Solve equations
+   • Provide explanations
+   • Have casual conversations
+
+🔧 To disable: Type "off gojo" or "gojo off"`;
+
+        const gojoOnMessage = design("😈 SMART GOJO ASSISTANT", onContent);
+        return api.sendMessage(gojoOnMessage, threadID, messageID);
+
+    } else if (message.includes('off gojo') || message.includes('gojo off') || message.includes('disable gojo') || message.includes('turn off gojo')) {
+        gojoToggleStates.set(threadID, false);
+
+        const offContent = `----------------------------------
+
+🔇 𝗚𝗢𝗝𝗢 𝗔𝗨𝗧𝗢 𝗠𝗢𝗗𝗘 𝗗𝗜𝗦𝗔𝗕𝗟𝗘𝗗
+
+❌ Gojo responses are now COMPLETELY DISABLED
+🚫 No automatic conversational detection
+🎯 Only specific utility commands will work
+⚡ Smart commands still active
+
+----------------------------------
+
+💡 Gojo will ONLY respond to:
+   • Specific commands (like asking directly)
+   • NOT general questions or conversations
+
+🔧 To enable Gojo: Type "on gojo" or "gojo on"`;
+
+        const gojoOffMessage = design("😈 SMART GOJO ASSISTANT", offContent);
+        return api.sendMessage(gojoOffMessage, threadID, messageID);
+    }
 }
