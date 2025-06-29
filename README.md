@@ -77,7 +77,6 @@ Professional notification system designed for mobile:
 - **Alternative AI**: "aria [question]" - Secondary AI assistant
 
 #### 📊 Advanced Features
-- **Reply Context**: AI remembers conversation when you reply to bot messages
 - **URL Recognition**: Automatic Facebook video download detection
 - **Spam Protection**: Individual user cooldown system (5 seconds)
 - **Error Recovery**: Graceful fallback mechanisms
@@ -86,7 +85,6 @@ Professional notification system designed for mobile:
 ### 🚀 Latest Updates & New Features
 
 #### 🆕 Version 2.0 Enhancements
-- **Context-Aware AI Responses**: Bot remembers conversation context when replying
 - **Mobile-Optimized Notifications**: Professional join/leave messages for mobile
 - **Enhanced Error Handling**: Improved "shoti" command with robust error management
 - **Unified Help System**: Single comprehensive help command (removed duplicates)
