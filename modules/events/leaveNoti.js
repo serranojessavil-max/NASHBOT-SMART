@@ -24,7 +24,7 @@ module.exports = {
 
         const leaveMessage = `
 ┌────────────────────────┐
-│     🤖 NASHBOT OFFLINE     │
+│ 🤖 NASHBOT OFFLINE     │
 └────────────────────────┘
 
 💔 Connection Terminated
@@ -58,10 +58,10 @@ module.exports = {
         
         const leaveMessage = `
 ┌────────────────────────┐
-│        👋 FAREWELL        │
+│     👋 FAREWELL        │
 └────────────────────────┘
 
-😔 Someone left the group
+😔 ${leftUserName} left the group
 
 👤 ${leftUserName}
 🏠 ${threadInfo.name}
