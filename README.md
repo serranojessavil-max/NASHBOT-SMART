@@ -41,6 +41,8 @@ Real-time stock monitoring with WebSocket technology:
 Advanced video and content management:
 - **Smart Video Requests**: "video", "shoti", "girl video" - AI-curated content
 - **TikTok Search**: "TikTok [topic]" - Search and download specific content
+- **Instagram Downloads**: "Ig [URL] - High-quality video downloader
+- **Spotify**: "song / music [name] - Search & Download songs from Spotify
 - **Facebook Downloads**: "Download [URL]" - High-quality video extraction
 - **Auto-Cleanup**: Temporary file management with error handling
 - **Format Optimization**: Mobile-friendly video processing
